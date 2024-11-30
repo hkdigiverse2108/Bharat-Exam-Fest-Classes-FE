@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import MultiSelection from "../Ui/MultiSelection";
 import { VscSaveAs } from "react-icons/vsc";
 import axios from "axios";
@@ -271,54 +277,97 @@ function AddQuestion() {
   const [currentEngPair, setCurrentEngPair] = useState("");
   const [currentHindiPair, setCurrentHindiPair] = useState("");
 
-  const addStatementQuestion = (language) => {
-    const currentStatement =
-      language === "english" ? currentEngStatement : currentHindiStatement;
-    if (!currentStatement.trim()) {
-      toast.warn("Please enter a statement.");
+  const addStatementQuestion = (value, language) => {
+    console.log(value);
+    
+    if (!value?.rowData) {
+      console.log("No row data available");
       return;
     }
 
-    setAddQuestion((prev) => ({
-      ...prev,
-      [language + "Question"]: {
-        ...prev[language + "Question"],
-        statementQuestion: [
-          ...prev[language + "Question"].statementQuestion,
-          currentStatement,
-        ],
-      },
-    }));
-    toast.success("Statement added!");
-  };
+    const { statement, id } = value.rowData;
 
-  const handleStatementQuestionChange = (event) => {
-    const { name, value } = event.target;
-    const [lang, field, option] = name.split(".");
-    const currentQuestionType = addQuestion.questionType;
+    if (typeof statement !== "string") {
+      console.log("Invalid input data: statement is not a string");
+    }
 
-    if (currentQuestionType === "pair") {
-      setAddQuestion((prev) => ({
-        ...prev,
-        [lang]: {
-          ...prev[lang],
-          [field]: value,
-        },
-      }));
-      setCurrentEngPair("");
-      setCurrentHindiPair("");
-    } else if (currentQuestionType === "statement") {
-      setAddQuestion((prev) => ({
-        ...prev,
-        [lang]: {
-          ...prev[lang],
-          [field]: value,
-        },
-      }));
-      setCurrentEngStatement("");
-      setCurrentHindiStatement("");
+    if (!statement) {
+      console.log("Invalid pair: Missing statement");
+    }
+
+    const finalCombined = {
+      id: id,
+      statement: statement,
+    };
+
+    if (language === "englishQuestion") {
+      setAddQuestion((prev) => {
+        const updatedStatements = prev.englishQuestion.statementQuestion.map(
+          (value) => (value.id === id ? { ...value, statement } : value)
+        );
+
+        if (!updatedStatements.some((value) => value.id === id)) {
+          updatedStatements.push(statement);
+        }
+
+        return {
+          ...prev,
+          englishQuestion: {
+            ...prev.englishQuestion,
+            statementQuestion: updatedStatements,
+          },
+        };
+      });
+    } else if (language === "hindiQuestion") {
+      setAddQuestion((prev) => {
+        const updatedStatements = prev.hindiQuestion.statementQuestion.map(
+          (value) => (value.id === id ? { ...value, statement } : value)
+        );
+
+        if (!updatedStatements.some((valid) => valid.id === id)) {
+          updatedStatements.push(statement);
+        }
+
+        console.log(updatedStatements);
+
+        return {
+          ...prev,
+          hindiQuestion: {
+            ...prev.hindiQuestion,
+            statementQuestion: updatedStatements,
+          },
+        };
+      });
     }
   };
+
+  // const handleStatementQuestionChange = (event) => {
+  //   const { name, value } = event.target;
+  //   const [lang, field, option] = name.split(".");
+  //   const currentQuestionType = addQuestion.questionType;
+
+  //   if (currentQuestionType === "pair") {
+  //     setAddQuestion((prev) => ({
+  //       ...prev,
+  //       [lang]: {
+  //         ...prev[lang],
+  //         [field]: value,
+  //       },
+  //     }));
+  //     setCurrentEngPair("");
+  //     setCurrentHindiPair("");
+  //   } else if (currentQuestionType === "statement") {
+  //     setAddQuestion((prev) => ({
+  //       ...prev,
+  //       [lang]: {
+  //         ...prev[lang],
+  //         [field]: value,
+  //       },
+  //     }));
+  //     setCurrentEngStatement("");
+  //     setCurrentHindiStatement("");
+  //   }
+  // };
 
   const handlePairQuestionChange = (language, index, field, value) => {
     const updatedPairQuestion = [...addQuestion[language].pairQuestion];
@@ -420,15 +469,15 @@ function AddQuestion() {
       console.log("No row data available");
       return; // Exit early if rowData is undefined
     }
-  
+
     const { pairA, pairB, id } = value.rowData;
-  
+
     // Ensure that both pairA and pairB are valid strings
     if (typeof pairA !== "string" || typeof pairB !== "string") {
       console.log("Invalid input data: pairA or pairB is not a string");
       return; // Exit the function early if data is invalid
     }
-  
+
     if (!pairA || !pairB) {
       console.log("Invalid pair: Missing pairA or pairB");
       return; // Exit the function early if either pairA or pairB is missing
@@ -492,59 +541,61 @@ function AddQuestion() {
   const debounceTimeoutRef = useRef(null);
 
   const handleGetData = useCallback(async () => {
-      setIsLoading(true);
-      setNetworkError("");
+    setIsLoading(true);
+    setNetworkError("");
 
-      const controller = new AbortController();
-      const signal = controller.signal;
+    const controller = new AbortController();
+    const signal = controller.signal;
 
-      try {
-   
+    try {
+      const { subjects, subTopic } = await fetchData(
+        accessToken,
+        subject,
+        signal
+      );
 
-          const {subjects,subTopic} = await fetchData(accessToken, subject,  signal );
-
-          if (!subjects || !subTopic) {
-              console.log("No data received");
-              return;
-          }
-
-          setSubjectname(subjects);
-          setSelectedSubject(subjects);
-          setSubtopics(subTopic);
-      } catch (error) {
-          if (error.name === "AbortError") {
-              console.log("Fetch aborted");
-          } else {
-              console.error("Failed to fetch data.", error);
-              setNetworkError(error.message);
-          }
-      } finally {
-          setIsLoading(false);
+      if (!subjects || !subTopic) {
+        console.log("No data received");
+        return;
       }
 
-      return () => {
-          controller.abort(); // Cleanup function to abort the fetch
-      };
+      setSubjectname(subjects);
+      setSelectedSubject(subjects);
+      setSubtopics(subTopic);
+    } catch (error) {
+      if (error.name === "AbortError") {
+        console.log("Fetch aborted");
+      } else {
+        console.error("Failed to fetch data.", error);
+        setNetworkError(error.message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+
+    return () => {
+      controller.abort(); // Cleanup function to abort the fetch
+    };
   }, [accessToken]);
 
   const debounceGetData = useCallback(() => {
-      if (debounceTimeoutRef.current) {
-          clearTimeout(debounceTimeoutRef.current); // Clear previous timeout
-      }
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current); // Clear previous timeout
+    }
 
-      debounceTimeoutRef.current = setTimeout(() => {
-          handleGetData();
-      }, 500); // Adjust debounce time as needed
+    debounceTimeoutRef.current = setTimeout(() => {
+      handleGetData();
+    }, 500); // Adjust debounce time as needed
   }, [handleGetData]);
 
   useEffect(() => {
-      debounceGetData();
+    debounceGetData();
 
-      return () => {
-          if (debounceTimeoutRef.current) {
-              clearTimeout(debounceTimeoutRef.current); // Cleanup on unmount
-          }
-      };
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current); // Cleanup on unmount
+      }
+    };
   }, [debounceGetData]);
 
   useEffect(() => {
@@ -606,8 +657,6 @@ function AddQuestion() {
       }
     }
   };
-
-
 
   return (
     <>
@@ -716,9 +765,6 @@ function AddQuestion() {
                       handleCheck={handleCheck}
                       optionsArray={optionsArray}
                       handlePairQuestionChange={handlePairQuestionChange}
-                      handleStatementQuestionChange={
-                        handleStatementQuestionChange
-                      }
                       inputs={inputs}
                       handleInputChange={handleInputChange}
                     />
@@ -731,7 +777,6 @@ function AddQuestion() {
                       handleChange={handleChange}
                       handleCheck={handleCheck}
                       optionsArray={optionsArray}
-                      handlePairQuestionChange={handleStatementQuestionChange}
                       handleAddStatement={addStatementQuestion}
                     />
                   ) : (
@@ -757,9 +802,6 @@ function AddQuestion() {
                       handleCheck={handleCheck}
                       optionsArray={optionsArray}
                       handlePairQuestionChange={handlePairQuestionChange}
-                      handleStatementQuestionChange={
-                        handleStatementQuestionChange
-                      }
                       inputs={inputs}
                       handleInputChange={handleInputChange}
                     />
@@ -772,7 +814,6 @@ function AddQuestion() {
                       handleChange={handleChange}
                       handleCheck={handleCheck}
                       optionsArray={optionsArray}
-                      handlePairQuestionChange={handleStatementQuestionChange}
                       handleAddStatement={addStatementQuestion}
                     />
                   ) : (

@@ -5,9 +5,6 @@ import FullTable from "../../../../Ui/Table";
 
 const EnglishQueStatementBaseform = ({
   addQuestion,
-  setAddQuestion,
-  currentStatement,
-  setCurrentStatement,
   handleChange,
   handleCheck,
   optionsArray,
@@ -41,7 +38,7 @@ const EnglishQueStatementBaseform = ({
       {/* Display list of statements */}
       <div className="space-y-2">
         <FullTable
-          pairQuestion={addQuestion.englishQuestion.pairQuestion}
+          pairQuestion={addQuestion.englishQuestion.statementQuestion}
           language={"englishQuestion"}
           handleChange={handleAddStatement}
           questionType={"statement"}

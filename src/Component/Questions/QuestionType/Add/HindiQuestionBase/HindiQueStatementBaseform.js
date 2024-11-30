@@ -60,7 +60,7 @@ const HindiQueStatementBaseform = ({
           {/* Display list of statements */}
           <div className="space-y-2">
             <FullTable
-              pairQuestion={addQuestion.hindiQuestion.pairQuestion}
+              pairQuestion={addQuestion.hindiQuestion.statementQuestion}
               language={"hindiQuestion"}
               handleChange={handleAddStatement}
               questionType={"statement"}

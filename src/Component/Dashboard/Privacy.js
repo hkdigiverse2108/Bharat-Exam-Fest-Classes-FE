@@ -4,10 +4,10 @@ import { useSelector } from "react-redux";
 
 
 export default function Privacy() {
-  const {  _id } = useSelector((state) => state.userConfig.classesData);
-  const accessToken = useSelector(
-    (state) => state.authConfig.userInfo[0]?.token
-  );
+  // const {  _id } = useSelector((state) => state.userConfig.classesData);
+  // const accessToken = useSelector(
+  //   (state) => state.authConfig.userInfo[0]?.token
+  // );
   // const addNewQuestion = async () => {
   //   try {
   //     if () {

@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -158,10 +164,10 @@ function EditQuestion() {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-  
+
     // Split the name to target the language, field, and option
     const [lang, field, option] = name.split("."); // e.g., "englishQuestion.options.A"
-  
+
     // Check if the field is related to either English or Hindi questions
     if (lang === "englishQuestion" || lang === "hindiQuestion") {
       if (field === "options" && option) {
@@ -187,25 +193,24 @@ function EditQuestion() {
         }));
       }
     } else {
-      // If the field is not related to English or Hindi questions, update it directly
       setEditQuestion((prev) => ({
         ...prev,
-        [name]: value, // Update the other fields like subjectId, classesId, etc.
+        [name]: value,
       }));
     }
   };
-  
+
   const handleTypeChange = (event) => {
     const newType = event.target.value;
     setType(newType);
     setEditQuestion((prev) => ({ ...prev, type: newType }));
   };
-  
+
   const handleSubjectChange = (event) => {
     const { value } = event.target;
     setEditQuestion((prev) => ({ ...prev, subjectId: value._id }));
   };
-  
+
   const handleSubtopicChange = (event) => {
     const { value } = event.target;
     const uniqueValues = Array.from(new Set(value.map((item) => item._id)));
@@ -215,27 +220,67 @@ function EditQuestion() {
       subtopicIds: uniqueValues,
     }));
   };
-  
 
-  const addStatementQuestion = (language) => {
-    const currentStatement =
-      language === "english" ? currentEngStatement : currentHindiStatement;
-    if (!currentStatement.trim()) {
-      toast.error("Please enter a statement.");
+  const addStatementQuestion = (value, language) => {
+    if (!value?.rowData) {
+      console.log("No row data available");
       return;
     }
 
-    setEditQuestion((prev) => ({
-      ...prev,
-      [language + "Question"]: {
-        ...prev[language + "Question"],
-        statementQuestion: [
-          ...prev[language + "Question"].statementQuestion,
-          currentStatement,
-        ],
-      },
-    }));
-    toast.success("Statement added!");
+    const { statement, id } = value.rowData;
+
+    if (typeof statement !== "string") {
+      console.log("Invalid input data: statement is not a string");
+    }
+
+    if (!statement) {
+      console.log("Invalid pair: Missing statement");
+    }
+
+    const finalCombined = {
+      id: id,
+      statement: statement,
+    };
+
+    if (language === "englishQuestion") {
+      setEditQuestion((prev) => {
+        const updatedStatements = prev.englishQuestion.statementQuestion.map((value) =>
+          value.id === id ? { ...value, ...finalCombined } : value
+        );
+
+        if (!updatedStatements.some((value) => value.id === id)) {
+          updatedStatements.push(finalCombined);
+        }
+
+        return {
+          ...prev,
+          englishQuestion: {
+            ...prev.englishQuestion,
+            statementQuestion: updatedStatements,
+          },
+        };
+      });
+    } else if (language === "hindiQuestion") {
+      setEditQuestion((prev) => {
+        const updatedStatements = prev.hindiQuestion.statementQuestion.map((value) =>
+          value.id === id ? { ...value, ...finalCombined } : value
+        );
+
+        if (!updatedStatements.some((valid) => valid.id === id)) {
+          updatedStatements.push(finalCombined);
+        }
+
+        console.log(updatedStatements);
+
+        return {
+          ...prev,
+          hindiQuestion: {
+            ...prev.hindiQuestion,
+            statementQuestion: updatedStatements,
+          },
+        };
+      });
+    }
   };
 
   const handleStatementQuestionChange = (event) => {
@@ -306,39 +351,38 @@ function EditQuestion() {
     }));
   };
 
-
   const handleAddPair = (value, language) => {
     if (!value?.rowData) {
       console.log("No row data available");
       return; // Exit early if rowData is undefined
     }
-  
+
     const { pairA, pairB, id } = value.rowData;
-  
+
     if (typeof pairA !== "string" || typeof pairB !== "string") {
       console.log("Invalid input data: pairA or pairB is not a string");
     }
-  
+
     if (!pairA || !pairB) {
       toast.warn("Invalid pair: Missing pairA or pairB");
     }
-  
+
     const combinedPair = `${pairA} --- ${pairB}`;
-  
+
     const finalCombined = {
       id: id,
       combined: combinedPair,
     };
-  
+
     setEditQuestion((prev) => {
       const updatedPairQuestion = prev[language + "Question"].pairQuestion.map(
         (pair) => (pair.id === id ? { ...pair, ...finalCombined } : pair)
       );
-  
+
       if (!updatedPairQuestion.some((pair) => pair.id === id)) {
         updatedPairQuestion.push(finalCombined);
       }
-  
+
       return {
         ...prev,
         [language + "Question"]: {
@@ -348,7 +392,7 @@ function EditQuestion() {
       };
     });
   };
-  
+
   // const handleAddPair = (value, language) => {
   //   if (!value?.rowData) {
   //     console.log("No row data available");
@@ -420,76 +464,78 @@ function EditQuestion() {
 
   const debounceTimeoutRef = useRef(null);
 
-const handleGetData = useCallback(async () => {
-  setIsLoading(true);
-  setNetworkError("");
+  const handleGetData = useCallback(async () => {
+    setIsLoading(true);
+    setNetworkError("");
 
-  const controller = new AbortController();
-  const signal = controller.signal;
+    const controller = new AbortController();
+    const signal = controller.signal;
 
-  try {
-    const { subTopics } = await fetchQuestionsBySubject(
-      accessToken,
-      CurrentSubject?._id,
-      _id,
-      signal
-    );
+    try {
+      const { subTopics } = await fetchQuestionsBySubject(
+        accessToken,
+        CurrentSubject?._id,
+        _id,
+        signal
+      );
 
-    const Subjectdata = await fetchData(accessToken, CurrentSubject?._id, signal);
+      const Subjectdata = await fetchData(
+        accessToken,
+        CurrentSubject?._id,
+        signal
+      );
 
-    if (!subTopics || !Subjectdata) {
-      console.log("No data received");
-      return;
-    }
-
-    const { subjects = [] } = Subjectdata;
-
-    // Set subtopics, subjectname, and selectedSubject only if data changes
-    setSubtopics((prevSubtopics) => {
-      if (JSON.stringify(prevSubtopics) !== JSON.stringify(subTopics)) {
-        return subTopics;
+      if (!subTopics || !Subjectdata) {
+        console.log("No data received");
+        return;
       }
-      return prevSubtopics;
-    });
-    setSubjectname(subjects);
-    setSelectedSubject(subjects);
 
-  } catch (error) {
-    if (error.name === "AbortError") {
-      console.log("Fetch aborted");
-    } else {
-      console.error("Failed to fetch data.", error);
-      setNetworkError(error.message);
+      const { subjects = [] } = Subjectdata;
+
+      // Set subtopics, subjectname, and selectedSubject only if data changes
+      setSubtopics((prevSubtopics) => {
+        if (JSON.stringify(prevSubtopics) !== JSON.stringify(subTopics)) {
+          return subTopics;
+        }
+        return prevSubtopics;
+      });
+      setSubjectname(subjects);
+      setSelectedSubject(subjects);
+    } catch (error) {
+      if (error.name === "AbortError") {
+        console.log("Fetch aborted");
+      } else {
+        console.error("Failed to fetch data.", error);
+        setNetworkError(error.message);
+      }
+    } finally {
+      setIsLoading(false);
     }
-  } finally {
-    setIsLoading(false);
-  }
 
-  return () => {
-    controller.abort();
-  };
-}, [accessToken, CurrentSubject, _id]);
+    return () => {
+      controller.abort();
+    };
+  }, [accessToken, CurrentSubject, _id]);
 
-const debounceGetData = useCallback(() => {
-  if (debounceTimeoutRef.current) {
-    clearTimeout(debounceTimeoutRef.current);
-  }
-
-  debounceTimeoutRef.current = setTimeout(() => {
-    handleGetData();
-  }, 500);
-}, [handleGetData]);
-
-useEffect(() => {
-  debounceGetData();
-
-  return () => {
+  const debounceGetData = useCallback(() => {
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
-  };
-}, [debounceGetData]); // No need to depend on debounceTimeout as we are using useRef
 
+    debounceTimeoutRef.current = setTimeout(() => {
+      handleGetData();
+    }, 500);
+  }, [handleGetData]);
+
+  useEffect(() => {
+    debounceGetData();
+
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, [debounceGetData]); // No need to depend on debounceTimeout as we are using useRef
 
   const isEmpty = () => {
     if (
@@ -579,7 +625,11 @@ useEffect(() => {
   }, [questionType]);
 
   useEffect(() => {
-    if (!editQuestion || !editQuestion.englishQuestion || !editQuestion.hindiQuestion) {
+    if (
+      !editQuestion ||
+      !editQuestion.englishQuestion ||
+      !editQuestion.hindiQuestion
+    ) {
       return; // Exit early if any of these objects are undefined
     }
 
@@ -602,11 +652,15 @@ useEffect(() => {
     setOptions({
       AnswerOption: { ...newOptions.englishQuestion },
     });
-  }, [editQuestion, editQuestion.englishQuestion, editQuestion.hindiQuestion, options]);
+  }, [
+    editQuestion,
+    editQuestion.englishQuestion,
+    editQuestion.hindiQuestion,
+    options,
+  ]);
 
   useEffect(() => {
     if (currentQuestion) {
-
       const newEditQuestion = {
         questionId: currentQuestion._id,
         subjectId: currentQuestion.subjectId,
@@ -622,7 +676,10 @@ useEffect(() => {
           solution: currentQuestion.englishQuestion.solution,
           statementQuestion: currentQuestion.englishQuestion.statementQuestion,
           pairQuestion: currentQuestion.englishQuestion.pairQuestion || [],
-          lastQuestion: currentQuestion.questionType !== "normal" ? currentQuestion.englishQuestion.lastQuestion : "",
+          lastQuestion:
+            currentQuestion.questionType !== "normal"
+              ? currentQuestion.englishQuestion.lastQuestion
+              : "",
         },
         hindiQuestion: {
           question: currentQuestion.hindiQuestion.question,
@@ -631,36 +688,43 @@ useEffect(() => {
           solution: currentQuestion.hindiQuestion.solution,
           statementQuestion: currentQuestion.hindiQuestion.statementQuestion,
           pairQuestion: currentQuestion.hindiQuestion.pairQuestion || [],
-          lastQuestion: currentQuestion.questionType !== "normal" ? currentQuestion.hindiQuestion.lastQuestion : "",
+          lastQuestion:
+            currentQuestion.questionType !== "normal"
+              ? currentQuestion.hindiQuestion.lastQuestion
+              : "",
         },
       };
-  
+
       console.log();
-      
+
       if (JSON.stringify(newEditQuestion) !== JSON.stringify(editQuestion)) {
         setEditQuestion(newEditQuestion);
       }
       setType(currentQuestion.type || "");
       setQuestionType(currentQuestion.questionType || "");
     }
-  }, [currentQuestion, subtopics]);  // Ensure `subtopics` is included if it's used to filter `currentQuestion`
-  
+  }, [currentQuestion, subtopics]); // Ensure `subtopics` is included if it's used to filter `currentQuestion`
 
   useEffect(() => {
-    if (currentQuestion && currentQuestion.subtopicIds && Array.isArray(currentQuestion.subtopicIds)) {
+    if (
+      currentQuestion &&
+      currentQuestion.subtopicIds &&
+      Array.isArray(currentQuestion.subtopicIds)
+    ) {
       const existSubtopics = currentQuestion.subtopicIds
         .map((subtopicId) => {
-          const subtopic = subtopics.find((subtopic) => subtopic._id === subtopicId);
-          return subtopic ? subtopic : null;  
+          const subtopic = subtopics.find(
+            (subtopic) => subtopic._id === subtopicId
+          );
+          return subtopic ? subtopic : null;
         })
-        .filter((subtopic) => subtopic !== null); 
-  
+        .filter((subtopic) => subtopic !== null);
+
       setSelectedSubtopic(existSubtopics);
     } else {
       setSelectedSubtopic([]);
     }
   }, [currentQuestion, subtopics]);
-  
 
   return (
     <>

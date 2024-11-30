@@ -41,7 +41,7 @@ const EnglishQueStatementBaseform = ({
       {/* Display list of statements */}
       <div className="space-y-2">
         <FullTable
-          pairQuestion={editQuestion.englishQuestion.pairQuestion}
+          pairQuestion={editQuestion.englishQuestion.statementQuestion}
           language={"englishQuestion"}
           handleChange={handleAddStatement}
           questionType={"statement"}
