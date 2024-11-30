@@ -606,6 +606,7 @@ useEffect(() => {
 
   useEffect(() => {
     if (currentQuestion) {
+
       const newEditQuestion = {
         questionId: currentQuestion._id,
         subjectId: currentQuestion.subjectId,
@@ -634,7 +635,8 @@ useEffect(() => {
         },
       };
   
-      // Prevent unnecessary state updates
+      console.log();
+      
       if (JSON.stringify(newEditQuestion) !== JSON.stringify(editQuestion)) {
         setEditQuestion(newEditQuestion);
       }
