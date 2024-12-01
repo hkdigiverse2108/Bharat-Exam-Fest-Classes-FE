@@ -2,6 +2,7 @@ import React from "react";
 import { FaPlus } from "react-icons/fa";
 import { MdStar } from "react-icons/md";
 import FullTable from "../../../../Ui/Table";
+import FullFeaturedCrudGrid from "../../../../Ui/FullFeaturedCrudGrid";
 
 const EnglishQuestionPairForm = ({
   addQuestion,
@@ -41,11 +42,14 @@ const EnglishQuestionPairForm = ({
         />
 
         {/* Pair Questions */}
-       
+
         <div className="space-y-2">
-         <FullTable pairQuestion={addQuestion.englishQuestion.pairQuestion} language={"englishQuestion"} handleChange={handleAddPair} 
-          questionType={"pair"}
-         />
+          <FullFeaturedCrudGrid
+            pairQuestion={addQuestion.englishQuestion.pairQuestion}
+            language={"englishQuestion"}
+            handleChange={handleAddPair}
+            questionType={"pair"}
+          />
         </div>
         <input
           className="border-2 pl-2 text-lg  border-gray-400 hover:border-gray-400 transition-colors rounded-md w-full py-2 px-3 text-gray-800 leading-tight focus:outline-none focus:ring-purple-600 focus:border-purple-600 focus:shadow-outline"

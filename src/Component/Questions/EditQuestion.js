@@ -32,8 +32,8 @@ import Loading from "../Loader/Loading";
 function EditQuestion() {
   const navigate = useNavigate();
   const { _id } = useSelector((state) => state.userConfig.classesData);
-  const accessToken = useSelector(
-    (state) => state.authConfig.userInfo[0]?.token
+   const accessToken = useSelector(
+    (state) => state.authConfig.userInfo[0]?.data?.token
   );
   const currentQuestion = useSelector(
     (state) => state.userConfig.CurrentQue[0]
@@ -220,6 +220,8 @@ function EditQuestion() {
       subtopicIds: uniqueValues,
     }));
   };
+
+  
 
   const addStatementQuestion = (value, language) => {
     if (!value?.rowData) {
@@ -662,40 +664,37 @@ function EditQuestion() {
   useEffect(() => {
     if (currentQuestion) {
       const newEditQuestion = {
-        questionId: currentQuestion._id,
-        subjectId: currentQuestion.subjectId,
-        classesId: currentQuestion.classesId,
-        subtopicIds: currentQuestion.subtopicIds,
-        questionBank: currentQuestion.questionBank,
-        type: currentQuestion.type,
-        questionType: currentQuestion.questionType,
+        questionId: currentQuestion?._id || "", // Default empty string if currentQuestion._id is not available
+        subjectId: currentQuestion?.subjectId || "",
+        classesId: currentQuestion?.classesId || "",
+        subtopicIds: currentQuestion?.subtopicIds || [],
+        questionBank: currentQuestion?.questionBank || "",
+        type: currentQuestion?.type || "",
+        questionType: currentQuestion?.questionType || "",
+      
         englishQuestion: {
-          question: currentQuestion.englishQuestion.question,
-          options: currentQuestion.englishQuestion.options,
-          answer: currentQuestion.englishQuestion.answer,
-          solution: currentQuestion.englishQuestion.solution,
-          statementQuestion: currentQuestion.englishQuestion.statementQuestion,
-          pairQuestion: currentQuestion.englishQuestion.pairQuestion || [],
-          lastQuestion:
-            currentQuestion.questionType !== "normal"
-              ? currentQuestion.englishQuestion.lastQuestion
-              : "",
+          question: currentQuestion?.englishQuestion?.question || "",
+          options: currentQuestion?.englishQuestion?.options || { A: "", B: "", C: "", D: "" },
+          answer: currentQuestion?.englishQuestion?.answer || "",
+          solution: currentQuestion?.englishQuestion?.solution || "",
+          statementQuestion: currentQuestion?.englishQuestion?.statementQuestion || [],
+          pairQuestion: currentQuestion?.englishQuestion?.pairQuestion || [],
+          lastQuestion: currentQuestion?.questionType !== "normal" ? currentQuestion?.englishQuestion?.lastQuestion || "" : "",
         },
+      
         hindiQuestion: {
-          question: currentQuestion.hindiQuestion.question,
-          options: currentQuestion.hindiQuestion.options,
-          answer: currentQuestion.hindiQuestion.answer,
-          solution: currentQuestion.hindiQuestion.solution,
-          statementQuestion: currentQuestion.hindiQuestion.statementQuestion,
-          pairQuestion: currentQuestion.hindiQuestion.pairQuestion || [],
-          lastQuestion:
-            currentQuestion.questionType !== "normal"
-              ? currentQuestion.hindiQuestion.lastQuestion
-              : "",
+          question: currentQuestion?.hindiQuestion?.question || "",
+          options: currentQuestion?.hindiQuestion?.options || { A: "", B: "", C: "", D: "" },
+          answer: currentQuestion?.hindiQuestion?.answer || "",
+          solution: currentQuestion?.hindiQuestion?.solution || "",
+          statementQuestion: currentQuestion?.hindiQuestion?.statementQuestion || [],
+          pairQuestion: currentQuestion?.hindiQuestion?.pairQuestion || [],
+          lastQuestion: currentQuestion?.questionType !== "normal" ? currentQuestion?.hindiQuestion?.lastQuestion || "" : "",
         },
       };
+      
 
-      console.log();
+      console.log(newEditQuestion);
 
       if (JSON.stringify(newEditQuestion) !== JSON.stringify(editQuestion)) {
         setEditQuestion(newEditQuestion);

@@ -17,13 +17,14 @@ import {
   getQuestionData,
 } from "../../Hooks/QuestionsApi";
 import { fetchSubjects } from "../../Hooks/getSubjectApi";
+import Loading from "../Loader/Loading";
 
 function SubjectDetails() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { _id } = useSelector((state) => state.userConfig.classesData);
-  const accessToken = useSelector(
-    (state) => state.authConfig.userInfo[0]?.token
+   const accessToken = useSelector(
+    (state) => state.authConfig.userInfo[0]?.data?.token
   );
   const CurrentSubject = useSelector(
     (state) => state.userConfig.CurrentSubject
@@ -343,8 +344,6 @@ function SubjectDetails() {
       const { Questions = [], subTopics = [] } = data;
       setQustions(Questions);
       setSubtopics(subTopics);
-
-      // Handle subtopics filtering based on the current subject
       const filteredData = subTopics.filter((subject) =>
         CurrentSubject?.subTopics?.some(
           (criteria) => subject._id === criteria._id
@@ -486,8 +485,9 @@ function SubjectDetails() {
             </div>
           </div>
 
+
           {isLoading ? (
-            <p>Loading questions...</p>
+            <Loading/>
           ) : networkError ? (
             <p className="text-red-500">Error: {networkError}</p>
           ) : (

@@ -187,17 +187,12 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
     <header className="sticky top-0 z-999 h-20 flex w-full bg-white shadow-2  drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none">
       <div className="flex flex-grow items-center px-4 py-4  md:px-6 2xl:px-11">
         {/* Logo Section */}
-        <div className="flex items-center gap-2 sm:gap-4">
-          <NavLink className="block flex-shrink-0" to="/">
-            <div className="flex items-center justify-center text-3xl font-semibold px-6">
-              <span className="text-center text-orange-600 whitespace-nowrap">
-                Dash
-              </span>
-              <span className="text-center text-black whitespace-nowrap">
-                Stack
-              </span>
-            </div>
-          </NavLink>
+        <div className="flex w-16 h-16 items-center gap-2 sm:gap-4">
+          <img
+            src="BEFlogo.png"
+            alt="Bharat Exam Fest"
+            className="w-full h-full rounded-sm object-cover"
+          />
         </div>
 
         {/* Navigation Section */}
@@ -234,7 +229,6 @@ const Header = ({ sidebarOpen, setSidebarOpen }) => {
         </div>
       </div>
 
-     
       {/* User Dropdown */}
       <div className="items-center gap-3 2xsm:gap-7 flex  px-4 py-4 md:px-6 2xl:px-11">
         <DropdownUser />

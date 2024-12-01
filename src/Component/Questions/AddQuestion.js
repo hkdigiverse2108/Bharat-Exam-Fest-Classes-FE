@@ -23,14 +23,17 @@ import HindiQueStatementBaseform from "./QuestionType/Add/HindiQuestionBase/Hind
 import { addNewQuestion } from "../../Hooks/QuestionsApi";
 import { fetchData } from "../../Hooks/getSubjectApi";
 import Loading from "../Loader/Loading";
+import Testing from "../Ui/FullFeaturedCrudGrid";
 
 function AddQuestion() {
   const navigate = useNavigate();
-  const classId = useSelector((state) => state.authConfig.userInfo[0]._id);
-  const accessToken = useSelector(
-    (state) => state.authConfig.userInfo[0]?.token
+  const classId = useSelector(
+    (state) => state.authConfig.userInfo[0]?.data?._id
   );
-  const subject = useSelector((state) => state.userConfig.CurrentSubject?._id);
+  const accessToken = useSelector(
+    (state) => state.authConfig.userInfo[0]?.data?.token
+  );
+  const subject = useSelector((state) => state.userConfig?.CurrentSubject?._id);
 
   const [isLoading, setIsLoading] = useState(true);
   const [networkError, setNetworkError] = useState("");
@@ -279,37 +282,41 @@ function AddQuestion() {
 
   const addStatementQuestion = (value, language) => {
     console.log(value);
-    
+  
+    // Check if rowData exists
     if (!value?.rowData) {
       console.log("No row data available");
       return;
     }
-
-    const { statement, id } = value.rowData;
-
+  
+    const { statement, id } = value?.rowData;
+  
+    // Validate the statement
     if (typeof statement !== "string") {
       console.log("Invalid input data: statement is not a string");
+      return;
     }
-
-    if (!statement) {
+  
+    if (!statement.trim()) {
       console.log("Invalid pair: Missing statement");
+      return;
     }
-
-    const finalCombined = {
-      id: id,
-      statement: statement,
-    };
-
+  
+    const finalCombined = { id, statement }; // Create the combined data object
+    console.log(finalCombined);
+  
+    // Update based on language
     if (language === "englishQuestion") {
       setAddQuestion((prev) => {
         const updatedStatements = prev.englishQuestion.statementQuestion.map(
-          (value) => (value.id === id ? { ...value, statement } : value)
+          (item) => (item.id === id ? { ...item, statement } : item)
         );
-
-        if (!updatedStatements.some((value) => value.id === id)) {
-          updatedStatements.push(statement);
+  
+        // Only push the statement if the id does not already exist in the array
+        if (!updatedStatements.some((item) => item.id === id)) {
+          updatedStatements.push(finalCombined);  // Add the statement object
         }
-
+  
         return {
           ...prev,
           englishQuestion: {
@@ -321,15 +328,16 @@ function AddQuestion() {
     } else if (language === "hindiQuestion") {
       setAddQuestion((prev) => {
         const updatedStatements = prev.hindiQuestion.statementQuestion.map(
-          (value) => (value.id === id ? { ...value, statement } : value)
+          (item) => (item.id === id ? { ...item, statement } : item)
         );
-
-        if (!updatedStatements.some((valid) => valid.id === id)) {
-          updatedStatements.push(statement);
+  
+        // Only push the statement if the id does not already exist in the array
+        if (!updatedStatements.some((item) => item.id === id)) {
+          updatedStatements.push(finalCombined);  // Add the statement object
         }
-
+  
         console.log(updatedStatements);
-
+  
         return {
           ...prev,
           hindiQuestion: {
@@ -340,6 +348,7 @@ function AddQuestion() {
       });
     }
   };
+  
 
   // const handleStatementQuestionChange = (event) => {
   //   const { name, value } = event.target;

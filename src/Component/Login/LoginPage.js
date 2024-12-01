@@ -55,84 +55,133 @@ function LoginPage() {
   const isEmpty = () => {
     return otpValue.otp === "" && !otpValue.userType;
   };
-  async function handleNavigate() {
+  async function handleToggle() {
     setConfirm(!confirm);
   }
 
   const [show, setShow] = useState(false);
 
-  async function handleLogin() {
+  const handleNavigate = () => {
+    navigate("/");
+  };
+
+  // Handle Login Button Click
+  const handleLoginClick = async () => {
     try {
-      let userData = JSON.stringify(input);
-      console.log("Login", input);
-
-      let config = {
-        method: "post",
-        url: `https://api-bef.hkdigiverse.com/auth/login`,
-        maxBodyLength: Infinity,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        data: userData,
-      };
-
-      const response = await axios.request(config);
-      const { status, data, message, error } = response.data;
-
-      if (response.status === 200) {
-        // toast.success(response.data.message);
-        dispatch(loginAdmin(response.data.data));
-        handleNavigate();
-      } else if (response.status === 400) {
-        toast.error(response.data.message);
-      } else {
-        console.warn("Login failed:", error);
-        console.log("Login failed: " + error.message);
-      }
-    } catch (err) {
-      toast.error(err.response.data.message);
-    }
-  }
-
-  const verifyOtp = async () => {
-    try {
-      if (isEmpty()) {
+      if (isEmptyLogin()) {
         toast.warning("Fill up empty space");
         return false;
       } else {
-        let data = JSON.stringify(otpValue);
-
-        let config = {
-          method: "post",
-          maxBodyLength: Infinity,
-          url: "https://api-bef.hkdigiverse.com/auth/otp/verify",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          data: data,
-        };
-
-        const response = await axios.request(config);
-
-        if (response.data.status === 200) {
-          console.log(response.data);
-          toast.success("OTP verified and Login successfully");
-          dispatch(loginSuccess(response.data.data));
-          // fetchClassData();
-          navigate("/");
-          handleNavigate();
-          return true;
+        const response = await handleLogin(input);
+        if (response.status === 200) {
+          dispatch(loginAdmin(response.data.data));
+          handleToggle();
         } else {
-          console.error("OTP verification failed");
-          return false;
+          toast.error(response.data.message);
         }
       }
     } catch (err) {
-      console.error(err.message);
-      console.error("An error occurred during OTP verification");
-      return false;
+      // Handle any error during the login
+      toast.error("Login failed: " + err.message);
     }
   };
+
+  // Handle OTP Verification Button Click
+  const handleOtpVerification = async () => {
+    try {
+      if (isEmpty(otpValue)) {
+        toast.warning("Fill up empty space");
+        return false;
+      } else {
+        const response = await verifyOtp(otpValue);
+        if (response.status === 200) {
+          toast.success(
+            response.data.message || "OTP verified and Login successfully"
+          );
+          dispatch(loginSuccess(response.data));
+          handleToggle();
+          handleNavigate();
+        } else {
+          toast.error(response.data.message);
+        }
+      }
+    } catch (err) {
+      toast.error("OTP verification failed: " + err.message);
+    }
+  };
+
+  // async function handleLogin() {
+  //   try {
+  //     let userData = JSON.stringify(input);
+  //     console.log("Login", input);
+
+  //     let config = {
+  //       method: "post",
+  //       url: `https://api-bef.hkdigiverse.com/auth/login`,
+  //       maxBodyLength: Infinity,
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       data: userData,
+  //     };
+
+  //     const response = await axios.request(config);
+  //     const { status, data, message, error } = response.data;
+
+  //     if (response.status === 200) {
+  //       // toast.success(response.data.message);
+  //       dispatch(loginAdmin(response.data.data));
+  //       handleNavigate();
+  //     } else if (response.status === 400) {
+  //       toast.error(response.data.message);
+  //     } else {
+  //       console.warn("Login failed:", error);
+  //       console.log("Login failed: " + error.message);
+  //     }
+  //   } catch (err) {
+  //     toast.error(err.response.data.message);
+  //   }
+  // }
+
+  // const verifyOtp = async () => {
+  //   try {
+  //     if (isEmpty()) {
+  //       toast.warning("Fill up empty space");
+  //       return false;
+  //     } else {
+  //       let data = JSON.stringify(otpValue);
+
+  //       let config = {
+  //         method: "post",
+  //         maxBodyLength: Infinity,
+  //         url: "https://api-bef.hkdigiverse.com/auth/otp/verify",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         data: data,
+  //       };
+
+  //       const response = await axios.request(config);
+
+  //       if (response.data.status === 200) {
+  //         console.log(response.data);
+  //         toast.success("OTP verified and Login successfully");
+  //         dispatch(loginSuccess(response.data.data));
+  //         // fetchClassData();
+  //         navigate("/");
+  //         handleNavigate();
+  //         return true;
+  //       } else {
+  //         console.error("OTP verification failed");
+  //         return false;
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.error(err.message);
+  //     console.error("An error occurred during OTP verification");
+  //     return false;
+  //   }
+  // };
   // const handleNavigatePage = () => navigate("/");
 
   // const handleLoginSubmit = async () => {
@@ -199,7 +248,7 @@ function LoginPage() {
         return;
       }
 
-      handleLogin();
+      handleLoginClick();
     } catch (error) {
       console.error(error);
     }
@@ -287,11 +336,11 @@ function LoginPage() {
           <OtpVerify
             confirm={confirm}
             setConfirm={handleLogin}
-            onClose={handleNavigate}
+            onClose={handleToggle}
             email={input.uniqueId} // Pass the user's email or any relevant data
             otpValue={otpValue}
             handleChangeOTP={handleChangeOTP}
-            handleOtpverify={verifyOtp}
+            handleOtpverify={handleOtpVerification}
           />
         </div>
       </section>

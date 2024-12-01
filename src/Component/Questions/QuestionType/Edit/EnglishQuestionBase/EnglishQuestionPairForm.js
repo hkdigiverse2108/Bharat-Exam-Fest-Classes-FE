@@ -2,6 +2,7 @@ import React from "react";
 import { FaPlus } from "react-icons/fa";
 import { MdStar } from "react-icons/md";
 import FullTable from "../../../../Ui/Table";
+import FullFeaturedCrudGrid from "../../../../Ui/FullFeaturedCrudGrid";
 
 const EnglishQuestionPairForm = ({
   editQuestion,
@@ -35,15 +36,16 @@ const EnglishQuestionPairForm = ({
         />
       </div>
       {/* Pair Questions */}
+
       <div className="space-y-2">
-        <FullTable
+        <FullFeaturedCrudGrid
           pairQuestion={editQuestion.englishQuestion.pairQuestion}
           language={"englishQuestion"}
           handleChange={handleAddPair}
           questionType={"pair"}
         />
       </div>
-     
+
       <div className="space-y-2">
         <label className="text-lg font-medium text-gray-900 dark:text-white">
           Enter Statement
@@ -76,7 +78,7 @@ const EnglishQuestionPairForm = ({
               <textarea
                 rows="3"
                 name={`englishQuestion.options.${option}`}
-                value={editQuestion.englishQuestion.options[option] || "" }
+                value={editQuestion.englishQuestion.options[option] || ""}
                 onChange={handleChange}
                 className="block w-full min-h-22 max-h-22 p-2 border rounded-lg bg-white placeholder-gray-400 text-gray-600 border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 focus:outline-none"
                 placeholder={`Option ${option}`}

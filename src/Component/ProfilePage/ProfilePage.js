@@ -1,13 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 // import Axios from "axios";
 import { VscSaveAs } from "react-icons/vsc";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-// import { updateData } from "../../Context/Action/index";
-import { VscEye, VscEyeClosed } from "react-icons/vsc";
-import MultipleSelection from "../Ui/MultiSelection";
-import axios from "axios";
+
 import { updateProfile } from "../../Hooks/updateProfileApi";
 import { loginAdmin } from "../../Context/Action";
 import { imgUpload } from "../../Hooks/updateImage";
@@ -15,10 +12,9 @@ import Loading from "../Loader/Loading";
 
 export default function ProfilePage() {
   const dispatch = useDispatch();
-  const [toggle, setToggle] = useState(false);
   const userData = useSelector((state) => state.userConfig.classesData);
   const accessToken = useSelector(
-    (state) => state.authConfig.userInfo[0]?.token
+    (state) => state.authConfig.userInfo[0]?.data?.token
   );
   const [formData, setFormData] = useState({
     classesId: "",
@@ -35,33 +31,74 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false); // Loading state
   const [networkError, setNetworkError] = useState(null); // Network error state
 
-  const handleImageUpload = async (file) => {
-    setIsLoading(true); // Start loading when image upload begins
-    setNetworkError(null); // Reset any previous network errors
+  // const handleImageUpload = async (file) => {
+  //   setIsLoading(true); // Start loading when image upload begins
+  //   setNetworkError(null); // Reset any previous network errors
 
-    try {
-      const response = await imgUpload(file, accessToken);
-      if (response.status === 200) {
-        setFormData((prevData) => ({
-          ...prevData,
-          image: response.data.data,
-        }));
-        toast.success(response.data.message);
-        setIsLoading(false);
-      } else {
-        console.error(response.data);
-        toast.error(response.data.message);
-        setIsLoading(false);
+  //   try {
+  //     const response = await imgUpload(file, accessToken);
+  //     if (response.status === 200) {
+  //       setFormData((prevData) => ({
+  //         ...prevData,
+  //         image: response.data.data,
+  //       }));
+  //       toast.success(response.data.message);
+  //       setIsLoading(false);
+  //     } else {
+  //       console.error(response.data);
+  //       toast.error(response.data.message);
+  //       setIsLoading(false);
+  //     }
+  //   } catch (error) {
+  //     setNetworkError("Network error while uploading image. Please try again.");
+  //     toast.error("Failed to upload image. Please check your network.");
+  //     console.error(error);
+  //     setIsLoading(false);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  const debounceTimeoutRef = useRef(null);
+
+  const handleImageUpload = useCallback(
+    async (file) => {
+      // Debounce logic: Cancel previous timeout if it's still pending
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
       }
-    } catch (error) {
-      setNetworkError("Network error while uploading image. Please try again.");
-      toast.error("Failed to upload image. Please check your network.");
-      console.error(error);
-      setIsLoading(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
+      // Start loading when image upload begins
+      setIsLoading(true);
+      setNetworkError(null); // Reset any previous network errors
+
+      // Use setTimeout to debounce the image upload
+      debounceTimeoutRef.current = setTimeout(async () => {
+        try {
+          const response = await imgUpload(file, accessToken);
+          if (response.status === 200) {
+            setFormData((prevData) => ({
+              ...prevData,
+              image: response.data.data, // Assuming the response contains the image data
+            }));
+            toast.success(response.data.message);
+          } else {
+            console.error(response.data);
+            toast.error(response.data.message);
+          }
+        } catch (error) {
+          setNetworkError(
+            "Network error while uploading image. Please try again."
+          );
+          toast.error("Failed to upload image. Please check your network.");
+          console.error(error);
+        } finally {
+          setIsLoading(false);
+        }
+      }, 500); // 500ms debounce delay
+    },
+    [accessToken]
+  );
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -100,72 +137,87 @@ export default function ProfilePage() {
   };
 
   // const handleSubmit = async (e) => {
-  //   e.preventDefault();
   //   if (isEmpty(formData)) {
-  //     toast.warn("Fill up empty field");
+  //     toast.warn("Fill up empty fields");
   //   } else {
   //     setIsLoading(true); // Set loading to true when submitting
-  //     setNetworkError(null); // Reset network error on submission attempt
+  //     setNetworkError(null);
 
   //     try {
   //       const response = await updateProfile(accessToken, formData);
-  //       console.log(response);
 
   //       if (response.data.status === 200) {
   //         toast.success("Profile updated successfully!");
-  //         dispatch(loginAdmin(response.data.data));
-  //         setIsLoading(false);
-  //         setNetworkError(null);
+  //         console.log("User Data to be logged in:", response.data.data);
+
+  //         if (response.data.data) {
+  //           dispatch(loginAdmin(response.data.data));
+  //         } else {
+  //           console.error("No data found in response.data.data");
+  //         }
   //       } else {
-  //         console.error(response.error);
+  //         console.error("Error response:", response.error);
   //         toast.error(response.error);
-  //         setIsLoading(false);
   //       }
   //     } catch (error) {
-  //       setIsLoading(false);
-
-  //       console.error(error);
+  //       console.error("Error during profile update:", error);
   //       toast.error("Failed to update profile. Please check your network.");
   //       setNetworkError(
   //         "Network error while updating profile. Please try again."
   //       );
+  //     } finally {
+  //       setIsLoading(false);
   //     }
   //   }
   // };
-  const handleSubmit = async (e) => {
-    if (isEmpty(formData)) {
-      toast.warn("Fill up empty fields");
-    } else {
-      setIsLoading(true); // Set loading to true when submitting
-      setNetworkError(null);
 
-      try {
-        const response = await updateProfile(accessToken, formData);
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault(); // Prevent default form submission
 
-        if (response.data.status === 200) {
-          toast.success("Profile updated successfully!");
-          console.log("User Data to be logged in:", response.data.data);
-
-          if (response.data.data) {
-            dispatch(loginAdmin(response.data.data));
-          } else {
-            console.error("No data found in response.data.data");
-          }
-        } else {
-          console.error("Error response:", response.error);
-          toast.error(response.error);
-        }
-      } catch (error) {
-        console.error("Error during profile update:", error);
-        toast.error("Failed to update profile. Please check your network.");
-        setNetworkError(
-          "Network error while updating profile. Please try again."
-        );
-      } finally {
-        setIsLoading(false); // Ensure that loading is set to false regardless of success or failure
+      // Debounce logic: cancel the previous submission if it's still pending
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
       }
-    }
-  };
+
+      // Debounce the form submission with a delay (500ms)
+      debounceTimeoutRef.current = setTimeout(async () => {
+        if (isEmpty(formData)) {
+          toast.warn("Fill up empty fields");
+        } else {
+          setIsLoading(true); // Set loading to true when submitting
+          setNetworkError(null);
+
+          try {
+            const response = await updateProfile(accessToken, formData);
+
+            if (response.data.status === 200) {
+              toast.success("Profile updated successfully!");
+              console.log("User Data to be logged in:", response.data.data);
+
+              if (response.data.data) {
+                dispatch(loginAdmin(response.data.data));
+              } else {
+                console.error("No data found in response.data.data");
+              }
+            } else {
+              console.error("Error response:", response.error);
+              toast.error(response.error);
+            }
+          } catch (error) {
+            console.error("Error during profile update:", error);
+            toast.error("Failed to update profile. Please check your network.");
+            setNetworkError(
+              "Network error while updating profile. Please try again."
+            );
+          } finally {
+            setIsLoading(false);
+          }
+        }
+      }, 500); // Delay of 500ms before executing the submission
+    },
+    [formData, accessToken, dispatch] // Make sure to include formData and other dependencies
+  );
 
   useEffect(() => {
     if (userData && userData._id) {
@@ -205,7 +257,7 @@ export default function ProfilePage() {
               <p>{networkError}</p>
             </div>
           ) : formData.name === "" || formData.contact.mobile === "" ? (
-            <div className="bg-yellow-500 text-white text-center py-3 px-4 rounded-md mb-4">
+            <div className=" text-red-500 text-center py-3 px-4 rounded-md mb-4">
               <p>No data available.</p>
             </div>
           ) : (

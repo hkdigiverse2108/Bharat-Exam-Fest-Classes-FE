@@ -2,6 +2,7 @@ import React from "react";
 import { FaPlus } from "react-icons/fa";
 import { MdStar } from "react-icons/md";
 import FullTable from "../../../../Ui/Table";
+import FullFeaturedCrudGrid from "../../../../Ui/FullFeaturedCrudGrid";
 
 const HindiQuestionPairForm = ({
   editQuestion,
@@ -38,13 +39,13 @@ const HindiQuestionPairForm = ({
       </div>
 
       {/* Display Pair Questions */}
+
       <div className="space-y-2">
-        <FullTable
+        <FullFeaturedCrudGrid
           pairQuestion={editQuestion.hindiQuestion.pairQuestion}
           language={"hindiQuestion"}
           handleChange={handleAddPair}
           questionType={"pair"}
-
         />
       </div>
       {/* {editQuestion.hindiQuestion?.pairQuestion?.length > 0 &&
@@ -74,7 +75,7 @@ const HindiQuestionPairForm = ({
           placeholder="Enter statement"
           value={editQuestion.hindiQuestion.lastQuestion}
           onChange={handleStatementQuestionChange}
-          name="hindiQuestion.statementQuestion"
+          name="hindiQuestion.lastQuestion"
         />
       </div>
 

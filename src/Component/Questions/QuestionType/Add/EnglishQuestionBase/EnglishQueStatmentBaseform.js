@@ -1,7 +1,7 @@
 import React from "react";
 import { FaPlus } from "react-icons/fa";
 import { MdStar } from "react-icons/md";
-import FullTable from "../../../../Ui/Table";
+import FullFeaturedCrudGrid from "../../../../Ui/FullFeaturedCrudGrid";
 
 const EnglishQueStatementBaseform = ({
   addQuestion,
@@ -33,11 +33,9 @@ const EnglishQueStatementBaseform = ({
         name="englishQuestion.question"
       />
 
-      
-
       {/* Display list of statements */}
       <div className="space-y-2">
-        <FullTable
+        <FullFeaturedCrudGrid
           pairQuestion={addQuestion.englishQuestion.statementQuestion}
           language={"englishQuestion"}
           handleChange={handleAddStatement}
@@ -46,12 +44,12 @@ const EnglishQueStatementBaseform = ({
       </div>
 
       {/* Input for suggestions */}
+
       <input
-        className="border-2 pl-2 text-lg border-gray-400 hover:border-gray-400 transition-colors rounded-md w-full py-2 px-3 text-gray-800 leading-tight focus:outline-none focus:ring-purple-600 focus:border-purple-600 focus:shadow-outline"
+        className="border-2 pl-2 text-lg  border-gray-400 hover:border-gray-400 transition-colors rounded-md w-full py-2 px-3 text-gray-800 leading-tight focus:outline-none focus:ring-purple-600 focus:border-purple-600 focus:shadow-outline"
         id="username"
         type="text"
         placeholder="Enter question"
-        value={addQuestion.englishQuestion.lastQuestion || ""}
         onChange={handleChange}
         name="englishQuestion.lastQuestion"
       />

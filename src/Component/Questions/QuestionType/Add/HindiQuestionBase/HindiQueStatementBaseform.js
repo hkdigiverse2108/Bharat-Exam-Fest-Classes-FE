@@ -2,6 +2,7 @@ import React from "react";
 import { FaPlus } from "react-icons/fa";
 import { MdStar } from "react-icons/md";
 import FullTable from "../../../../Ui/Table";
+import FullFeaturedCrudGrid from "../../../../Ui/FullFeaturedCrudGrid";
 
 const HindiQueStatementBaseform = ({
   addQuestion,
@@ -46,8 +47,8 @@ const HindiQueStatementBaseform = ({
         </div> */}
 
         {/* Input for the statement */}
-        
-          {/* <input
+
+        {/* <input
             className="border-2 pl-2 text-lg  border-gray-400 hover:border-gray-400 transition-colors rounded-md w-full py-2 px-3 text-gray-800 leading-tight focus:outline-none focus:ring-purple-600 focus:border-purple-600 focus:shadow-outline"
             id="username"
             type="text"
@@ -57,16 +58,16 @@ const HindiQueStatementBaseform = ({
             name="hindiQuestion.statementQuestion"
           /> */}
 
-          {/* Display list of statements */}
-          <div className="space-y-2">
-            <FullTable
-              pairQuestion={addQuestion.hindiQuestion.statementQuestion}
-              language={"hindiQuestion"}
-              handleChange={handleAddStatement}
-              questionType={"statement"}
-            />
-          </div>
-         
+        {/* Display list of statements */}
+   
+        <div className="space-y-2">
+          <FullFeaturedCrudGrid
+            pairQuestion={addQuestion.hindiQuestion.statementQuestion}
+            language={"hindiQuestion"}
+            handleChange={handleAddStatement}
+            questionType={"statement"}
+          />
+        </div>
 
         {/* Input for suggestions */}
         <input

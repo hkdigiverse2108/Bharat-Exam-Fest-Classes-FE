@@ -210,32 +210,26 @@ import {
 //   );
 // }
 
-// function EditToolbar(props) {
-//   const { setRows, setRowModesModel, isPair } = props;
-
+// function EditToolbar({ setRows, setRowModesModel, isPair }) {
 //   const handleClick = () => {
 //     setRows((oldRows) => {
-//       // Calculate the new index by using the current length of the rows
-//       const newIndex = oldRows.length;
+//       // Create a new unique ID using uuidv4 for new rows
+//       const newId = uuidv4(); // Generate a unique ID
 
 //       // Create a new row based on the question type (pair or statement)
 //       const newRow = isPair
-//         ? { index: newIndex, pairA: "", pairB: "", isNew: true }
-//         : { index: newIndex, statement: "", isNew: true };
+//         ? { id: newId, pairA: "", pairB: "", isNew: true }
+//         : { id: newId, statement: "", isNew: true };
 
 //       // Add the new row to the existing rows
 //       return [...oldRows, newRow];
 //     });
 
 //     // Set the row mode for the new row to "Edit"
-//     // Set the row mode after the rows are updated
-//     setRowModesModel((oldModel) => {
-//       const newIndex = oldModel ? Object.keys(oldModel).length : 0; // Determine newIndex based on oldModel length
-//       return {
-//         ...oldModel,
-//         [newIndex]: { mode: GridRowModes.Edit, fieldToFocus: "question" },
-//       };
-//     });
+//     setRowModesModel((oldModel) => ({
+//       ...oldModel,
+//       [uuidv4()]: { mode: GridRowModes.Edit, fieldToFocus: "question" },
+//     }));
 //   };
 
 //   return (
@@ -257,10 +251,11 @@ import {
 //   language,
 //   questionType,
 // }) {
-//   // Initialize rows state with data from pairQuestion prop, using index as the key
+//   // Initialize rows state with data from pairQuestion prop, ensuring rows have a unique ID
 //   const [rows, setRows] = React.useState(() => {
 //     return (
 //       pairQuestion?.map((pair, index) => {
+//         const newId = uuidv4(); // Generate a unique ID for each row
 //         if (
 //           questionType === "pair" &&
 //           pair.combined &&
@@ -269,12 +264,12 @@ import {
 //           const [pairA, ...rest] = pair.combined.split("---");
 //           const pairB = rest.join("---").trim();
 //           if (pairA.trim() && pairB.trim()) {
-//             return { index, pairA: pairA.trim(), pairB: pairB.trim() };
+//             return { id: newId, pairA: pairA.trim(), pairB: pairB.trim() };
 //           }
 //         } else if (questionType === "statement") {
-//           return { index, statement: [pair.combined] }; // Initialize as array
+//           return { id: newId, statement: [pair.combined] }; // Initialize with statement
 //         }
-//         return null; // Return null if pair doesn't meet the criteria
+//         return null;
 //       }) || []
 //     );
 //   });
@@ -287,97 +282,71 @@ import {
 //     }
 //   };
 
-//   const handleEditClick = (index) => () => {
+//   const handleEditClick = (id) => () => {
 //     setRowModesModel({
 //       ...rowModesModel,
-//       [index]: { mode: GridRowModes.Edit },
+//       [id]: { mode: GridRowModes.Edit },
 //     });
 //   };
 
-//   const handleSaveClick = (index) => () => {
+//   const handleSaveClick = (id) => () => {
 //     setRowModesModel({
 //       ...rowModesModel,
-//       [index]: { mode: GridRowModes.View },
+//       [id]: { mode: GridRowModes.View },
 //     });
 
-//     // Find the updated row from the rows state
-//     const updatedRow = rows[index];
+//     const updatedRow = rows.find((row) => row.id === id);
 
-//     // Update the row in the state
 //     setRows((prevRows) =>
-//       prevRows.map((row, idx) =>
-//         idx === index ? { ...row, isNew: false } : row
-//       )
+//       prevRows.map((row) => (row.id === id ? { ...row, isNew: false } : row))
 //     );
 
-//     // Call the change handler for saving
+//     handleChange({ type: "save", rowIndex: id, rowData: updatedRow }, language);
+//   };
+
+//   const handleDeleteClick = (id) => () => {
+//     const deletedRow = rows.find((row) => row.id === id);
+
+//     setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+
 //     handleChange(
-//       { type: "save", rowIndex: index, rowData: updatedRow },
+//       { type: "delete", rowIndex: id, rowData: deletedRow },
 //       language
 //     );
 //   };
 
-//   const handleDeleteClick = (index) => () => {
-//     const deletedRow = rows[index];
-
-//     if (!deletedRow) {
-//       console.error("Row with index:", index, "not found in rows.");
-//       return;
-//     }
-
-//     // Remove the row from the state
-//     setRows((prevRows) => prevRows.filter((_, idx) => idx !== index));
-
-//     // Call the change handler for deletion
-//     handleChange(
-//       { type: "delete", rowIndex: index, rowData: deletedRow },
-//       language
-//     );
-//   };
-
-//   const handleCancelClick = (index) => () => {
+//   const handleCancelClick = (id) => () => {
 //     setRowModesModel({
 //       ...rowModesModel,
-//       [index]: { mode: GridRowModes.View, ignoreModifications: true },
+//       [id]: { mode: GridRowModes.View, ignoreModifications: true },
 //     });
 
-//     const editedRow = rows[index];
-
-//     if (!editedRow) {
-//       console.error("Edited row with index:", index, "not found.");
-//       return;
-//     }
-
-//     if (editedRow.isNew) {
-//       // If the row was newly added and editing is canceled, remove it
-//       setRows((prevRows) => prevRows.filter((_, idx) => idx !== index));
-//       handleChange({ type: "cancel", rowIndex: index }, language);
+//     const editedRow = rows.find((row) => row.id === id);
+//     if (editedRow?.isNew) {
+//       setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+//       handleChange({ type: "cancel", rowIndex: id }, language);
 //     }
 //   };
 
 //   const processRowUpdate = (newRow) => {
-//     // If questionType is 'statement', append the new statement to the array
 //     if (questionType === "statement") {
 //       setRows((prevRows) =>
-//         prevRows.map((row, idx) =>
-//           idx === newRow.index
-//             ? {
-//                 ...row,
-//                 statement: [...row.statement, newRow.statement], // Append new statement
-//               }
+//         prevRows.map((row) =>
+//           row.id === newRow.id
+//             ? { ...row, statement: [...row.statement, newRow.statement] }
 //             : row
 //         )
 //       );
 //     } else {
 //       setRows((prevRows) =>
-//         prevRows.map((row, idx) =>
-//           idx === newRow.index ? { ...newRow, isNew: false } : row
+//         prevRows.map((row) =>
+//           row.id === newRow.id ? { ...newRow, isNew: false } : row
 //         )
 //       );
 //     }
 
 //     handleChange(
-//       { type: "update", rowIndex: newRow.index, rowData: newRow },
+//       { type: "update", rowIndex: newRow.id, rowData: newRow },
 //       language
 //     );
 
@@ -417,8 +386,8 @@ import {
 //       headerName: "Actions",
 //       width: 100,
 //       cellClassName: "actions",
-//       getActions: ({ index }) => {
-//         const isInEditMode = rowModesModel[index]?.mode === GridRowModes.Edit;
+//       getActions: ({ id }) => {
+//         const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
 
 //         if (isInEditMode) {
 //           return [
@@ -426,13 +395,13 @@ import {
 //               icon={<Save />}
 //               label="Save"
 //               sx={{ color: "primary.main" }}
-//               onClick={handleSaveClick(index)}
+//               onClick={handleSaveClick(id)}
 //             />,
 //             <GridActionsCellItem
 //               icon={<Close />}
 //               label="Cancel"
 //               className="textPrimary"
-//               onClick={handleCancelClick(index)}
+//               onClick={handleCancelClick(id)}
 //               color="inherit"
 //             />,
 //           ];
@@ -443,13 +412,13 @@ import {
 //             icon={<Edit />}
 //             label="Edit"
 //             className="textPrimary"
-//             onClick={handleEditClick(index)}
+//             onClick={handleEditClick(id)}
 //             color="inherit"
 //           />,
 //           <GridActionsCellItem
 //             icon={<DeleteOutlined />}
 //             label="Delete"
-//             onClick={handleDeleteClick(index)}
+//             onClick={handleDeleteClick(id)}
 //             color="inherit"
 //           />,
 //         ];
@@ -482,9 +451,12 @@ import {
 //         onProcessRowUpdateError={onProcessRowUpdateError}
 //         slots={{ toolbar: EditToolbar }}
 //         slotProps={{
-//           toolbar: { setRows, setRowModesModel, isPair: questionType },
+//           toolbar: {
+//             setRows,
+//             setRowModesModel,
+//             isPair: questionType === "pair",
+//           },
 //         }}
-//         getRowId={(row) => row.index} // Use index as the unique row id
 //       />
 //     </Box>
 //   );
@@ -1358,25 +1330,292 @@ import {
 //   );
 // }
 
-function EditToolbar(props) {
-  const { setRows, setRowModesModel, isPair } = props;
+// function EditToolbar(props) {
+//   const { setRows, setRowModesModel, isPair } = props;
 
+//   const handleClick = () => {
+//     setRows((oldRows) => {
+//       const newIndex = oldRows.length;
+
+//       // Create a new row with a unique id
+//       const newRow = isPair
+//         ? { id: newIndex, index: newIndex, pairA: "", pairB: "", isNew: true }
+//         : { id: newIndex, index: newIndex, statement: "", isNew: true };
+
+//       return [...oldRows, newRow];
+//     });
+
+//     // Set the row mode for the new row to "Edit"
+//     setRowModesModel((oldModel,index) => ({
+//       ...oldModel,
+//       [index]: { mode: GridRowModes.Edit, fieldToFocus: "question" },
+//     }));
+//   };
+
+//   return (
+//     <GridToolbarContainer>
+//       <Button
+//         className="bg-orange-500 text-white hover:bg-orange-600 hover:text-white"
+//         startIcon={<Add />}
+//         onClick={handleClick}
+//       >
+//         {isPair ? "Add Pair" : "Add Statement"}
+//       </Button>
+//     </GridToolbarContainer>
+//   );
+// }
+
+// export default function FullTable({
+//   pairQuestion,
+//   handleChange,
+//   language,
+//   questionType,
+// }) {
+//   // Initialize rows state with data from pairQuestion prop, using index as the key
+//   const [rows, setRows] = React.useState(() => {
+//     return (
+//       pairQuestion?.map((pair, index) => {
+//         if (
+//           questionType === "pair" &&
+//           pair.combined &&
+//           pair.combined.includes("---")
+//         ) {
+//           const [pairA, ...rest] = pair.combined.split("---");
+//           const pairB = rest.join("---").trim();
+//           if (pairA.trim() && pairB.trim()) {
+//             return { id: index, index, pairA: pairA.trim(), pairB: pairB.trim() };
+//           }
+//         } else if (questionType === "statement") {
+//           return { id: index, index, statement: [pair.combined] }; // Initialize with statement
+//         }
+//         return null; // Return null if pair doesn't meet the criteria
+//       }) || []
+//     );
+//   });
+
+//   const [rowModesModel, setRowModesModel] = React.useState({});
+
+//   const handleRowEditStop = (params, event) => {
+//     if (params.reason === GridRowEditStopReasons.rowFocusOut) {
+//       event.defaultMuiPrevented = true;
+//     }
+//   };
+
+//   const handleEditClick = (index) => () => {
+//     setRowModesModel({
+//       ...rowModesModel,
+//       [index]: { mode: GridRowModes.Edit },
+//     });
+//   };
+
+//   const handleSaveClick = (index) => () => {
+//     setRowModesModel({
+//       ...rowModesModel,
+//       [index]: { mode: GridRowModes.View },
+//     });
+
+//     // Find the updated row from the rows state
+//     const updatedRow = rows[index];
+
+//     // Update the row in the state
+//     setRows((prevRows) =>
+//       prevRows.map((row, idx) =>
+//         idx === index ? { ...row, isNew: false } : row
+//       )
+//     );
+
+//     // Call the change handler for saving
+//     handleChange(
+//       { type: "save", rowIndex: index, rowData: updatedRow },
+//       language
+//     );
+//   };
+
+//   const handleDeleteClick = (index) => () => {
+//     const deletedRow = rows[index];
+
+//     if (!deletedRow) {
+//       console.error("Row with index:", index, "not found in rows.");
+//       return;
+//     }
+
+//     // Remove the row from the state
+//     setRows((prevRows) => prevRows.filter((_, idx) => idx !== index));
+
+//     // Call the change handler for deletion
+//     handleChange(
+//       { type: "delete", rowIndex: index, rowData: deletedRow },
+//       language
+//     );
+//   };
+
+//   const handleCancelClick = (index) => () => {
+//     setRowModesModel({
+//       ...rowModesModel,
+//       [index]: { mode: GridRowModes.View, ignoreModifications: true },
+//     });
+
+//     const editedRow = rows[index];
+
+//     if (!editedRow) {
+//       console.error("Edited row with index:", index, "not found.");
+//       return;
+//     }
+
+//     if (editedRow.isNew) {
+//       // If the row was newly added and editing is canceled, remove it
+//       setRows((prevRows) => prevRows.filter((_, idx) => idx !== index));
+//       handleChange({ type: "cancel", rowIndex: index }, language);
+//     }
+//   };
+
+//   const processRowUpdate = (newRow) => {
+//     if (questionType === "statement") {
+//       setRows((prevRows) =>
+//         prevRows.map((row, idx) =>
+//           idx === newRow.index
+//             ? { ...row, statement: [...row.statement, newRow.statement] } // Append new statement
+//             : row
+//         )
+//       );
+//     } else {
+//       setRows((prevRows) =>
+//         prevRows.map((row, idx) =>
+//           idx === newRow.index ? { ...newRow, isNew: false } : row
+//         )
+//       );
+//     }
+
+//     handleChange(
+//       { type: "update", rowIndex: newRow.index, rowData: newRow },
+//       language
+//     );
+
+//     return newRow;
+//   };
+
+//   const handleRowModesModelChange = (newRowModesModel) => {
+//     setRowModesModel(newRowModesModel);
+//   };
+
+//   const onProcessRowUpdateError = (error) => {
+//     console.error("Error during row update:", error);
+//   };
+
+//   const columns = [
+//     {
+//       field: questionType === "pair" ? "pairA" : "statement",
+//       headerName: questionType === "pair" ? "Pair A" : "Statement",
+//       flex: 1,
+//       minWidth: 180,
+//       editable: true,
+//     },
+//     ...(questionType === "pair"
+//       ? [
+//           {
+//             field: "pairB",
+//             headerName: "Pair B",
+//             flex: 1,
+//             minWidth: 220,
+//             editable: true,
+//           },
+//         ]
+//       : []),
+//     {
+//       field: "actions",
+//       type: "actions",
+//       headerName: "Actions",
+//       width: 100,
+//       cellClassName: "actions",
+//       getActions: ({ index }) => {
+//         const isInEditMode = rowModesModel[index]?.mode === GridRowModes.Edit;
+
+//         if (isInEditMode) {
+//           return [
+//             <GridActionsCellItem
+//               icon={<Save />}
+//               label="Save"
+//               sx={{ color: "primary.main" }}
+//               onClick={handleSaveClick(index)}
+//             />,
+//             <GridActionsCellItem
+//               icon={<Close />}
+//               label="Cancel"
+//               className="textPrimary"
+//               onClick={handleCancelClick(index)}
+//               color="inherit"
+//             />,
+//           ];
+//         }
+
+//         return [
+//           <GridActionsCellItem
+//             icon={<Edit />}
+//             label="Edit"
+//             className="textPrimary"
+//             onClick={handleEditClick(index)}
+//             color="inherit"
+//           />,
+//           <GridActionsCellItem
+//             icon={<DeleteOutlined />}
+//             label="Delete"
+//             onClick={handleDeleteClick(index)}
+//             color="inherit"
+//           />,
+//         ];
+//       },
+//     },
+//   ];
+
+//   return (
+//     <Box
+//       sx={{
+//         width: "100%",
+//         "& .actions": {
+//           color: "text.secondary",
+//         },
+//         "& .textPrimary": {
+//           color: "text.primary",
+//         },
+//       }}
+//     >
+//       <DataGrid
+//         rows={rows}
+//         columns={columns}
+//         editMode="row"
+//         rowHeight={50}
+//         rowsPerPageOptions={[5]}
+//         rowModesModel={rowModesModel}
+//         onRowModesModelChange={handleRowModesModelChange}
+//         onRowEditStop={handleRowEditStop}
+//         processRowUpdate={processRowUpdate}
+//         onProcessRowUpdateError={onProcessRowUpdateError}
+//         slots={{ toolbar: EditToolbar }}
+//         slotProps={{
+//           toolbar: { setRows, setRowModesModel, isPair: questionType },
+//         }}
+//         getRowId={(row) => row.id} // Ensure that the row has an id field
+//       />
+//     </Box>
+//   );
+// }
+
+import { v4 as uuidv4 } from "uuid";
+
+function EditToolbar({ setRows, setRowModesModel, isPair }) {
   const handleClick = () => {
     setRows((oldRows) => {
-      const newIndex = oldRows.length;
-
-      // Create a new row with a unique id
+      let idCounter = 0;
+      const newId = idCounter++;
       const newRow = isPair
-        ? { id: newIndex, index: newIndex, pairA: "", pairB: "", isNew: true }
-        : { id: newIndex, index: newIndex, statement: "", isNew: true };
-
+        ? { id: newId, pairA: "", pairB: "", isNew: true }
+        : { id: newId, statement: "", isNew: true };
       return [...oldRows, newRow];
     });
 
-    // Set the row mode for the new row to "Edit"
-    setRowModesModel((oldModel,index) => ({
+    setRowModesModel((oldModel) => ({
       ...oldModel,
-      [index]: { mode: GridRowModes.Edit, fieldToFocus: "question" },
+      [uuidv4()]: { mode: GridRowModes.Edit, fieldToFocus: "question" },
     }));
   };
 
@@ -1393,17 +1632,16 @@ function EditToolbar(props) {
   );
 }
 
-
 export default function FullTable({
   pairQuestion,
   handleChange,
   language,
   questionType,
 }) {
-  // Initialize rows state with data from pairQuestion prop, using index as the key
   const [rows, setRows] = React.useState(() => {
     return (
-      pairQuestion?.map((pair, index) => {
+      pairQuestion?.map((pair) => {
+        const newId = uuidv4();
         if (
           questionType === "pair" &&
           pair.combined &&
@@ -1411,13 +1649,11 @@ export default function FullTable({
         ) {
           const [pairA, ...rest] = pair.combined.split("---");
           const pairB = rest.join("---").trim();
-          if (pairA.trim() && pairB.trim()) {
-            return { id: index, index, pairA: pairA.trim(), pairB: pairB.trim() };
-          }
+          return { id: newId, pairA: pairA.trim(), pairB: pairB.trim() };
         } else if (questionType === "statement") {
-          return { id: index, index, statement: [pair.combined] }; // Initialize with statement
+          return { id: newId, statement: [pair.combined] };
         }
-        return null; // Return null if pair doesn't meet the criteria
+        return null;
       }) || []
     );
   });
@@ -1430,102 +1666,67 @@ export default function FullTable({
     }
   };
 
-  const handleEditClick = (index) => () => {
-    setRowModesModel({
-      ...rowModesModel,
-      [index]: { mode: GridRowModes.Edit },
-    });
+  const handleEditClick = (id) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
   };
 
-  const handleSaveClick = (index) => () => {
-    setRowModesModel({
-      ...rowModesModel,
-      [index]: { mode: GridRowModes.View },
-    });
-
-    // Find the updated row from the rows state
-    const updatedRow = rows[index];
-
-    // Update the row in the state
+  const handleSaveClick = (id) => () => {
+    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+    const updatedRow = rows.find((row) => row.id === id);
     setRows((prevRows) =>
-      prevRows.map((row, idx) =>
-        idx === index ? { ...row, isNew: false } : row
-      )
+      prevRows.map((row) => (row.id === id ? { ...row, isNew: false } : row))
     );
+    handleChange({ type: "save", rowIndex: id, rowData: updatedRow }, language);
+  };
 
-    // Call the change handler for saving
+  const handleDeleteClick = (id) => () => {
+    const deletedRow = rows.find((row) => row.id === id);
+    setRows((prevRows) => prevRows.filter((row) => row.id !== id));
     handleChange(
-      { type: "save", rowIndex: index, rowData: updatedRow },
+      { type: "delete", rowIndex: id, rowData: deletedRow },
       language
     );
   };
 
-  const handleDeleteClick = (index) => () => {
-    const deletedRow = rows[index];
-
-    if (!deletedRow) {
-      console.error("Row with index:", index, "not found in rows.");
-      return;
-    }
-
-    // Remove the row from the state
-    setRows((prevRows) => prevRows.filter((_, idx) => idx !== index));
-
-    // Call the change handler for deletion
-    handleChange(
-      { type: "delete", rowIndex: index, rowData: deletedRow },
-      language
-    );
-  };
-
-  const handleCancelClick = (index) => () => {
+  const handleCancelClick = (id) => () => {
     setRowModesModel({
       ...rowModesModel,
-      [index]: { mode: GridRowModes.View, ignoreModifications: true },
+      [id]: { mode: GridRowModes.View, ignoreModifications: true },
     });
-
-    const editedRow = rows[index];
-
-    if (!editedRow) {
-      console.error("Edited row with index:", index, "not found.");
-      return;
-    }
-
-    if (editedRow.isNew) {
-      // If the row was newly added and editing is canceled, remove it
-      setRows((prevRows) => prevRows.filter((_, idx) => idx !== index));
-      handleChange({ type: "cancel", rowIndex: index }, language);
+    const editedRow = rows.find((row) => row.id === id);
+    if (editedRow?.isNew) {
+      setRows((prevRows) => prevRows.filter((row) => row.id !== id));
+      handleChange({ type: "cancel", rowIndex: id }, language);
     }
   };
 
   const processRowUpdate = (newRow) => {
     if (questionType === "statement") {
       setRows((prevRows) =>
-        prevRows.map((row, idx) =>
-          idx === newRow.index
-            ? { ...row, statement: [...row.statement, newRow.statement] } // Append new statement
+        prevRows.map((row) =>
+          row.id === newRow.id
+            ? { ...row, statement: [...row.statement, newRow.statement] }
             : row
         )
       );
     } else {
       setRows((prevRows) =>
-        prevRows.map((row, idx) =>
-          idx === newRow.index ? { ...newRow, isNew: false } : row
+        prevRows.map((row) =>
+          row.id === newRow.id ? { ...newRow, isNew: false } : row
         )
       );
     }
 
     handleChange(
-      { type: "update", rowIndex: newRow.index, rowData: newRow },
+      { type: "update", rowIndex: newRow.id, rowData: newRow },
       language
     );
-
     return newRow;
   };
 
-  const handleRowModesModelChange = (newRowModesModel) => {
+  const handleRowModesModelChange = (newRowModesModel) =>
     setRowModesModel(newRowModesModel);
-  };
+  
 
   const onProcessRowUpdateError = (error) => {
     console.error("Error during row update:", error);
@@ -1556,22 +1757,21 @@ export default function FullTable({
       headerName: "Actions",
       width: 100,
       cellClassName: "actions",
-      getActions: ({ index }) => {
-        const isInEditMode = rowModesModel[index]?.mode === GridRowModes.Edit;
-
+      getActions: ({ id }) => {
+        const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
         if (isInEditMode) {
           return [
             <GridActionsCellItem
               icon={<Save />}
               label="Save"
               sx={{ color: "primary.main" }}
-              onClick={handleSaveClick(index)}
+              onClick={handleSaveClick(id)}
             />,
             <GridActionsCellItem
               icon={<Close />}
               label="Cancel"
               className="textPrimary"
-              onClick={handleCancelClick(index)}
+              onClick={handleCancelClick(id)}
               color="inherit"
             />,
           ];
@@ -1582,13 +1782,13 @@ export default function FullTable({
             icon={<Edit />}
             label="Edit"
             className="textPrimary"
-            onClick={handleEditClick(index)}
+            onClick={handleEditClick(id)}
             color="inherit"
           />,
           <GridActionsCellItem
             icon={<DeleteOutlined />}
             label="Delete"
-            onClick={handleDeleteClick(index)}
+            onClick={handleDeleteClick(id)}
             color="inherit"
           />,
         ];
@@ -1600,12 +1800,8 @@ export default function FullTable({
     <Box
       sx={{
         width: "100%",
-        "& .actions": {
-          color: "text.secondary",
-        },
-        "& .textPrimary": {
-          color: "text.primary",
-        },
+        "& .actions": { color: "text.secondary" },
+        "& .textPrimary": { color: "text.primary" },
       }}
     >
       <DataGrid
@@ -1621,9 +1817,12 @@ export default function FullTable({
         onProcessRowUpdateError={onProcessRowUpdateError}
         slots={{ toolbar: EditToolbar }}
         slotProps={{
-          toolbar: { setRows, setRowModesModel, isPair: questionType },
+          toolbar: {
+            setRows,
+            setRowModesModel,
+            isPair: questionType === "pair",
+          },
         }}
-        getRowId={(row) => row.id} // Ensure that the row has an id field
       />
     </Box>
   );

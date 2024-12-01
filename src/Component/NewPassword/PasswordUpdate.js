@@ -259,8 +259,8 @@ export default function PasswordUpdate() {
   const [networkError, setNetworkError] = useState(false); 
 
   const userData = useSelector((state) => state.userConfig.classesData);
-  const accessToken = useSelector(
-    (state) => state.authConfig.userInfo[0]?.token
+   const accessToken = useSelector(
+    (state) => state.authConfig.userInfo[0]?.data?.token
   );
 
   const isEmpty = () => {

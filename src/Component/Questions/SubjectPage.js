@@ -10,8 +10,8 @@ import "react-toastify/dist/ReactToastify.css";
 
 function SubjectPage() {
   const { _id } = useSelector((state) => state.userConfig.classesData);
-  const accessToken = useSelector(
-    (state) => state.authConfig.userInfo[0]?.token
+   const accessToken = useSelector(
+    (state) => state.authConfig.userInfo[0]?.data?.token
   );
 
   const navigate = useNavigate();
@@ -41,6 +41,7 @@ function SubjectPage() {
     try {
       // Use the fetchSubjects function, passing the necessary parameters
       const { totalQuestions, subjects } = await fetchSubjects(accessToken, _id, signal);
+console.log(subjects);
 
       if (!subjects || !totalQuestions) {
         console.log("No data received");
@@ -117,10 +118,6 @@ function SubjectPage() {
           <div className=" text-red-500 text-center py-3 px-4 rounded-md mb-4">
             <p>{networkError}</p>
           </div>
-        ) : data.length === 0 ? (
-          <div className="bg-yellow-500 text-white text-center py-3 px-4 rounded-md mb-4">
-            <p>No subjects available.</p>
-          </div>
         ) : (
           <>
             <div className="grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-6 lg:grid-cols-3 lg:gap-2 xl:grid-cols-4 xl:gap-3 2xl:grid-cols-4 2xl:gap-6">
@@ -141,7 +138,7 @@ function SubjectPage() {
                       </p>
                       <div className="pr-4">
                         <img
-                          src={value.image}
+                          src={value?.image}
                           className="block w-24 h-20 px-5 py-2 shadow-sm rounded-md"
                           alt={value.name}
                         />

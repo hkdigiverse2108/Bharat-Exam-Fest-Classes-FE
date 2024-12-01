@@ -2,6 +2,7 @@ import React from "react";
 import { FaPlus } from "react-icons/fa";
 import { MdStar } from "react-icons/md";
 import FullTable from "../../../../Ui/Table";
+import FullFeaturedCrudGrid from "../../../../Ui/FullFeaturedCrudGrid";
 
 const EnglishQueStatementBaseform = ({
   editQuestion,
@@ -39,12 +40,13 @@ const EnglishQueStatementBaseform = ({
       />
 
       {/* Display list of statements */}
+
       <div className="space-y-2">
-        <FullTable
-          pairQuestion={editQuestion.englishQuestion.statementQuestion}
-          language={"englishQuestion"}
-          handleChange={handleAddStatement}
-          questionType={"statement"}
+        <FullFeaturedCrudGrid
+           pairQuestion={editQuestion.englishQuestion.statementQuestion}
+           language={"englishQuestion"}
+           handleChange={handleAddStatement}
+           questionType={"statement"}
         />
       </div>
 
