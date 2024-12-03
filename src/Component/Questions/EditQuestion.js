@@ -32,8 +32,10 @@ import Loading from "../Loader/Loading";
 function EditQuestion() {
   const navigate = useNavigate();
   const { _id } = useSelector((state) => state.userConfig.classesData);
-   const accessToken = useSelector(
-    (state) => state.authConfig.userInfo[0]?.data?.token
+  const accessToken = useSelector(
+    (state) =>
+      state.authConfig.userInfo[0]?.data?.token ||
+      state.authConfig.userInfo[0]?.token
   );
   const currentQuestion = useSelector(
     (state) => state.userConfig.CurrentQue[0]
@@ -48,8 +50,8 @@ function EditQuestion() {
   const [questionType, setQuestionType] = useState("");
   const [subTopicName, setSubTopicName] = useState([]);
   const [selectedSubtopic, setSelectedSubtopic] = useState([]);
+  const [subjectname, setSubjectname] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
-  const [subjectname, setSubjectname] = useState([]);
   const [subtopics, setSubtopics] = useState([]);
   const [currentEngStatement, setCurrentEngStatement] = useState("");
   const [currentHindiStatement, setCurrentHindiStatement] = useState("");
@@ -63,7 +65,6 @@ function EditQuestion() {
         subjectId: "",
         classesId: "",
         subtopicIds: [],
-        questionBank: "",
         type: "",
         questionType: "",
         englishQuestion: {
@@ -89,7 +90,6 @@ function EditQuestion() {
         subjectId: "",
         classesId: "",
         subtopicIds: [],
-        questionBank: "",
         type: "",
         questionType: "",
         englishQuestion: {
@@ -208,7 +208,9 @@ function EditQuestion() {
 
   const handleSubjectChange = (event) => {
     const { value } = event.target;
+
     setEditQuestion((prev) => ({ ...prev, subjectId: value._id }));
+    setSelectedSubject(value);
   };
 
   const handleSubtopicChange = (event) => {
@@ -221,9 +223,10 @@ function EditQuestion() {
     }));
   };
 
-  
-
   const addStatementQuestion = (value, language) => {
+    console.log(value);
+
+    // Check if rowData exists
     if (!value?.rowData) {
       console.log("No row data available");
       return;
@@ -231,12 +234,15 @@ function EditQuestion() {
 
     const { statement, id } = value.rowData;
 
+    // Validate the statement
     if (typeof statement !== "string") {
       console.log("Invalid input data: statement is not a string");
+      return;
     }
 
-    if (!statement) {
+    if (!statement.trim()) {
       console.log("Invalid pair: Missing statement");
+      return;
     }
 
     const finalCombined = {
@@ -244,13 +250,14 @@ function EditQuestion() {
       statement: statement,
     };
 
+    // Update based on language
     if (language === "englishQuestion") {
       setEditQuestion((prev) => {
-        const updatedStatements = prev.englishQuestion.statementQuestion.map((value) =>
-          value.id === id ? { ...value, ...finalCombined } : value
+        const updatedStatements = prev.englishQuestion.statementQuestion.map(
+          (item) => (item.id === id ? { ...item, finalCombined } : item)
         );
 
-        if (!updatedStatements.some((value) => value.id === id)) {
+        if (!updatedStatements.some((item) => item.id === id)) {
           updatedStatements.push(finalCombined);
         }
 
@@ -264,12 +271,13 @@ function EditQuestion() {
       });
     } else if (language === "hindiQuestion") {
       setEditQuestion((prev) => {
-        const updatedStatements = prev.hindiQuestion.statementQuestion.map((value) =>
-          value.id === id ? { ...value, ...finalCombined } : value
+        const updatedStatements = prev.hindiQuestion.statementQuestion.map(
+          (item) => (item.id === id ? { ...item, finalCombined } : item)
         );
 
-        if (!updatedStatements.some((valid) => valid.id === id)) {
-          updatedStatements.push(finalCombined);
+        // Only push the statement if the id does not already exist in the array
+        if (!updatedStatements.some((item) => item.id === id)) {
+          updatedStatements.push(finalCombined); // Add the statement object
         }
 
         console.log(updatedStatements);
@@ -356,7 +364,7 @@ function EditQuestion() {
   const handleAddPair = (value, language) => {
     if (!value?.rowData) {
       console.log("No row data available");
-      return; // Exit early if rowData is undefined
+      return;
     }
 
     const { pairA, pairB, id } = value.rowData;
@@ -395,208 +403,9 @@ function EditQuestion() {
     });
   };
 
-  // const handleAddPair = (value, language) => {
-  //   if (!value?.rowData) {
-  //     console.log("No row data available");
-  //     return; // Exit early if rowData is undefined
-  //   }
-  //   const { pairA, pairB, id } = value.rowData;
-
-  //   if (typeof pairA !== "string" || typeof pairB !== "string") {
-  //     console.log("Invalid input data: pairA or pairB is not a string");
-  //   }
-
-  //   if (!pairA || !pairB) {
-  //     toast.warn("Invalid pair: Missing pairA or pairB");
-  //   }
-
-  //   const combinedPair = `${pairA} --- ${pairB}`;
-
-  //   const finalCombined = {
-  //     id: id,
-  //     combined: combinedPair,
-  //   };
-
-  //   console.log("Final Combined Object:", finalCombined);
-
-  //   if (language === "englishQuestion") {
-  //     setEditQuestion((prev) => {
-  //       const updatedPairQuestion = prev.englishQuestion.pairQuestion.map(
-  //         (pair) => (pair.id === id ? { ...pair, ...finalCombined } : pair)
-  //       );
-
-  //       if (!updatedPairQuestion.some((pair) => pair.id === id)) {
-  //         updatedPairQuestion.push(finalCombined);
-  //       }
-
-  //       return {
-  //         ...prev,
-  //         englishQuestion: {
-  //           ...prev.englishQuestion,
-  //           pairQuestion: updatedPairQuestion,
-  //         },
-  //       };
-  //     });
-  //   } else if (language === "hindiQuestion") {
-  //     setEditQuestion((prev) => {
-  //       const updatedPairQuestion = prev.hindiQuestion.pairQuestion.map(
-  //         (pair) => (pair.id === id ? { ...pair, ...finalCombined } : pair)
-  //       );
-
-  //       if (!updatedPairQuestion.some((pair) => pair.id === id)) {
-  //         updatedPairQuestion.push(finalCombined);
-  //       }
-
-  //       console.log(updatedPairQuestion);
-
-  //       return {
-  //         ...prev,
-  //         hindiQuestion: {
-  //           ...prev.hindiQuestion,
-  //           pairQuestion: updatedPairQuestion,
-  //         },
-  //       };
-  //     });
-  //   }
-  // };
-
-  useEffect(() => {
-    console.log("EDIT QUESTION", editQuestion);
-  }, [editQuestion]);
-
-  const debounceTimeoutRef = useRef(null);
-
-  const handleGetData = useCallback(async () => {
-    setIsLoading(true);
-    setNetworkError("");
-
-    const controller = new AbortController();
-    const signal = controller.signal;
-
-    try {
-      const { subTopics } = await fetchQuestionsBySubject(
-        accessToken,
-        CurrentSubject?._id,
-        _id,
-        signal
-      );
-
-      const Subjectdata = await fetchData(
-        accessToken,
-        CurrentSubject?._id,
-        signal
-      );
-
-      if (!subTopics || !Subjectdata) {
-        console.log("No data received");
-        return;
-      }
-
-      const { subjects = [] } = Subjectdata;
-
-      // Set subtopics, subjectname, and selectedSubject only if data changes
-      setSubtopics((prevSubtopics) => {
-        if (JSON.stringify(prevSubtopics) !== JSON.stringify(subTopics)) {
-          return subTopics;
-        }
-        return prevSubtopics;
-      });
-      setSubjectname(subjects);
-      setSelectedSubject(subjects);
-    } catch (error) {
-      if (error.name === "AbortError") {
-        console.log("Fetch aborted");
-      } else {
-        console.error("Failed to fetch data.", error);
-        setNetworkError(error.message);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-
-    return () => {
-      controller.abort();
-    };
-  }, [accessToken, CurrentSubject, _id]);
-
-  const debounceGetData = useCallback(() => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-
-    debounceTimeoutRef.current = setTimeout(() => {
-      handleGetData();
-    }, 500);
-  }, [handleGetData]);
-
-  useEffect(() => {
-    debounceGetData();
-
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-    };
-  }, [debounceGetData]); // No need to depend on debounceTimeout as we are using useRef
-
-  const isEmpty = () => {
-    if (
-      !editQuestion.subjectId ||
-      !editQuestion.classesId ||
-      editQuestion.subtopicIds.length === 0 ||
-      !editQuestion.type ||
-      !editQuestion.questionType ||
-      !editQuestion.englishQuestion.question ||
-      !editQuestion.englishQuestion.answer ||
-      !editQuestion.englishQuestion.solution ||
-      !editQuestion.hindiQuestion.question ||
-      !editQuestion.hindiQuestion.answer ||
-      !editQuestion.hindiQuestion.solution
-    ) {
-      return true;
-    }
-
-    const englishOptions = editQuestion.englishQuestion.options;
-    const hindiOptions = editQuestion.hindiQuestion.options;
-
-    if (
-      !englishOptions.A ||
-      !englishOptions.B ||
-      !englishOptions.C ||
-      !englishOptions.D ||
-      !hindiOptions.A ||
-      !hindiOptions.B ||
-      !hindiOptions.C ||
-      !hindiOptions.D
-    ) {
-      return true;
-    }
-
-    return false;
-  };
-
-  const EditQuestion = async () => {
-    try {
-      if (isEmpty(editQuestion)) {
-        toast.warning("Please fill up empty fields.");
-      } else {
-        const response = await editQuestionAPI(editQuestion, accessToken);
-
-        if (response.status === 200) {
-          toast.success(response.data.message);
-          console.log("success", response.data);
-          navigate("/subjectDetails");
-          handleGetData(); // Refresh data after success
-        } else {
-          console.log("failed", response.data);
-          toast.error(response.data.message);
-        }
-      }
-    } catch (err) {
-      console.error("Error during question edit:", err.message);
-      toast.error("An error occurred while editing the question.");
-    }
-  };
+  // useEffect(() => {
+  //   console.log("EDIT_QUESTION", editQuestion);
+  // }, [editQuestion]);
 
   useEffect(() => {
     if (questionType === "normal") {
@@ -664,37 +473,51 @@ function EditQuestion() {
   useEffect(() => {
     if (currentQuestion) {
       const newEditQuestion = {
-        questionId: currentQuestion?._id || "", // Default empty string if currentQuestion._id is not available
+        questionId: currentQuestion?._id || "",
         subjectId: currentQuestion?.subjectId || "",
         classesId: currentQuestion?.classesId || "",
         subtopicIds: currentQuestion?.subtopicIds || [],
-        questionBank: currentQuestion?.questionBank || "",
         type: currentQuestion?.type || "",
         questionType: currentQuestion?.questionType || "",
-      
+
         englishQuestion: {
           question: currentQuestion?.englishQuestion?.question || "",
-          options: currentQuestion?.englishQuestion?.options || { A: "", B: "", C: "", D: "" },
+          options: currentQuestion?.englishQuestion?.options || {
+            A: "",
+            B: "",
+            C: "",
+            D: "",
+          },
           answer: currentQuestion?.englishQuestion?.answer || "",
           solution: currentQuestion?.englishQuestion?.solution || "",
-          statementQuestion: currentQuestion?.englishQuestion?.statementQuestion || [],
+          statementQuestion:
+            currentQuestion?.englishQuestion?.statementQuestion || [],
           pairQuestion: currentQuestion?.englishQuestion?.pairQuestion || [],
-          lastQuestion: currentQuestion?.questionType !== "normal" ? currentQuestion?.englishQuestion?.lastQuestion || "" : "",
+          lastQuestion:
+            currentQuestion?.questionType !== "normal"
+              ? currentQuestion?.englishQuestion?.lastQuestion || ""
+              : "",
         },
-      
+
         hindiQuestion: {
           question: currentQuestion?.hindiQuestion?.question || "",
-          options: currentQuestion?.hindiQuestion?.options || { A: "", B: "", C: "", D: "" },
+          options: currentQuestion?.hindiQuestion?.options || {
+            A: "",
+            B: "",
+            C: "",
+            D: "",
+          },
           answer: currentQuestion?.hindiQuestion?.answer || "",
           solution: currentQuestion?.hindiQuestion?.solution || "",
-          statementQuestion: currentQuestion?.hindiQuestion?.statementQuestion || [],
+          statementQuestion:
+            currentQuestion?.hindiQuestion?.statementQuestion || [],
           pairQuestion: currentQuestion?.hindiQuestion?.pairQuestion || [],
-          lastQuestion: currentQuestion?.questionType !== "normal" ? currentQuestion?.hindiQuestion?.lastQuestion || "" : "",
+          lastQuestion:
+            currentQuestion?.questionType !== "normal"
+              ? currentQuestion?.hindiQuestion?.lastQuestion || ""
+              : "",
         },
       };
-      
-
-      console.log(newEditQuestion);
 
       if (JSON.stringify(newEditQuestion) !== JSON.stringify(editQuestion)) {
         setEditQuestion(newEditQuestion);
@@ -702,7 +525,7 @@ function EditQuestion() {
       setType(currentQuestion.type || "");
       setQuestionType(currentQuestion.questionType || "");
     }
-  }, [currentQuestion, subtopics]); // Ensure `subtopics` is included if it's used to filter `currentQuestion`
+  }, [currentQuestion, editQuestion, subtopics]);
 
   useEffect(() => {
     if (
@@ -725,6 +548,129 @@ function EditQuestion() {
     }
   }, [currentQuestion, subtopics]);
 
+  const debounceTimeoutRef = useRef(null);
+
+  const handleGetData = useCallback(async () => {
+    setIsLoading(true);
+    setNetworkError("");
+
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    try {
+      const Subjectdata = await fetchData(
+        accessToken,
+        CurrentSubject?._id,
+        signal
+      );
+
+      // Check if subTopic exists
+      if (!Subjectdata.subTopic) {
+        console.log("No data received");
+        return;
+      }
+
+    
+      setSubtopics(Subjectdata.subTopic);
+      setSelectedSubtopic(Subjectdata.subTopic);
+      setSubjectname(Subjectdata.subjects);
+      setSelectedSubject(Subjectdata.subjects);
+    } catch (error) {
+      if (error.name === "AbortError") {
+        console.log("Fetch aborted");
+      } else {
+        console.error("Failed to fetch data.", error);
+        setNetworkError(error.message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+
+    return () => {
+      controller.abort();
+    };
+  }, [accessToken, CurrentSubject]);
+
+  // const debounceGetData = useCallback(() => {
+  //   if (debounceTimeoutRef.current) {
+  //     clearTimeout(debounceTimeoutRef.current);
+  //   }
+
+  //   debounceTimeoutRef.current = setTimeout(() => {
+  //     handleGetData();
+  //   }, 300); // Reduced debounce time to 300ms
+  // }, [handleGetData]);
+
+  useEffect(() => {
+    handleGetData();
+
+    // return () => {
+    //   if (debounceTimeoutRef.current) {
+    //     clearTimeout(debounceTimeoutRef.current);
+    //   }
+    // };
+  }, []);
+  const isEmpty = () => {
+    if (
+      !editQuestion.subjectId ||
+      !editQuestion.classesId ||
+      editQuestion.subtopicIds.length === 0 ||
+      !editQuestion.type ||
+      !editQuestion.questionType ||
+      !editQuestion.englishQuestion.question ||
+      !editQuestion.englishQuestion.answer ||
+      !editQuestion.englishQuestion.solution ||
+      !editQuestion.hindiQuestion.question ||
+      !editQuestion.hindiQuestion.answer ||
+      !editQuestion.hindiQuestion.solution
+    ) {
+      return true;
+    }
+
+    const englishOptions = editQuestion.englishQuestion.options;
+    const hindiOptions = editQuestion.hindiQuestion.options;
+
+    if (
+      !englishOptions.A ||
+      !englishOptions.B ||
+      !englishOptions.C ||
+      !englishOptions.D ||
+      !hindiOptions.A ||
+      !hindiOptions.B ||
+      !hindiOptions.C ||
+      !hindiOptions.D
+    ) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const EditQuestion = async () => {
+    try {
+      if (isEmpty(editQuestion)) {
+        toast.warning("Please fill up empty fields.");
+      } else {
+        const response = await editQuestionAPI(editQuestion, accessToken);
+
+        if (response.status === 200) {
+          const message =
+            response.data.message || "Question edited successfully!";
+          toast.success(message);
+          console.log("success", response.data);
+          navigate("/subjectDetails");
+          handleGetData();
+        } else {
+          console.log("failed", response.data);
+          toast.error(response.data.message);
+        }
+      }
+    } catch (err) {
+      console.error("Error during question edit:", err.message);
+      toast.error("An error occurred while editing the question.");
+    }
+  };
+
   return (
     <>
       <section className="bg-white dark:bg-gray-900 rounded-lg border-2 border-slate-300 font-sans duration-300 ease-in-out">
@@ -746,90 +692,74 @@ function EditQuestion() {
                   <label className="font-medium text-gray-900 text-start capitalize text-md dark:text-white">
                     Subject
                   </label>
-                  {networkError ? (
-                    <p className="text-red-500">Error: {networkError}</p> // Display network error message
-                  ) : (
-                    <SingleSelect
-                      label="Subject"
-                      value={selectedSubject}
-                      onChange={handleSubjectChange}
-                      options={subjectname}
-                    />
-                  )}
+                  <SingleSelect
+                    label="Subject"
+                    options={subjectname}
+                    selectedValue={selectedSubject}
+                    onChange={handleSubjectChange}
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <label className="font-medium text-gray-900 text-start capitalize text-md dark:text-white">
                     Subtopic
                   </label>
-                  {networkError ? (
-                    <p className="text-red-500">Error: {networkError}</p> // Display network error message
-                  ) : (
-                    <MultipleSelect
-                      label="Subtopics"
-                      value={selectedSubtopic}
-                      onChange={handleSubtopicChange}
-                      options={subtopics}
-                    />
-                  )}
+
+                  <MultipleSelect
+                    label="Subtopics"
+                    value={selectedSubtopic}
+                    onChange={handleSubtopicChange}
+                    options={subtopics}
+                  />
                 </div>
 
                 <div className="space-y-3">
                   <label className="font-medium text-gray-900 text-start capitalize text-md dark:text-white">
                     Question Type
                   </label>
-                  {networkError ? (
-                    <p className="text-red-500">Error: {networkError}</p> // Display network error message
-                  ) : (
-                    <RadioButtons
-                      options={radioOptions}
-                      checkedValue={type}
-                      onChange={handleTypeChange}
-                    />
-                  )}
+
+                  <RadioButtons
+                    options={radioOptions}
+                    checkedValue={type}
+                    onChange={handleTypeChange}
+                  />
                 </div>
               </div>
               <div className="p-4 md:flex sm:flex text-sm font-medium text-gray-900 space-x-6  text-start dark:text-white">
                 <p className="flex items-center capitalize text-xl font-medium text-gray-900 dark:text-white">
                   Question Type :
                 </p>
-                {networkError ? (
-                  <p className="text-red-500">Error: {networkError}</p> // Error message for network failure
-                ) : (
-                  ["normal", "statement", "pair"].map((option, index) => (
-                    <div
-                      className="flex items-center justify-start space-x-2"
-                      key={index}
+                {["normal", "statement", "pair"].map((option, index) => (
+                  <div
+                    className="flex items-center justify-start space-x-2"
+                    key={index}
+                  >
+                    <input
+                      type="radio"
+                      id={`type-${option}`}
+                      value={option}
+                      name="questionType"
+                      checked={editQuestion.questionType === option}
+                      onChange={(e) => {
+                        setEditQuestion((prev) => ({
+                          ...prev,
+                          questionType: e.target.value,
+                        }));
+                        setQuestionType(e.target.value);
+                      }}
+                      className="w-4 h-4 text-orange-600 bg-orange-600 border-orange-600 dark:bg-gray-600 dark:border-gray-500"
+                    />
+                    <label
+                      htmlFor={`type-${option}`}
+                      className="w-full py-3 text-sm font-medium capitalize text-gray-900 dark:text-gray-300"
                     >
-                      <input
-                        type="radio"
-                        id={`type-${option}`}
-                        value={option}
-                        name="questionType"
-                        checked={editQuestion.questionType === option}
-                        onChange={(e) => {
-                          setEditQuestion((prev) => ({
-                            ...prev,
-                            questionType: e.target.value,
-                          }));
-                          setQuestionType(e.target.value);
-                        }}
-                        className="w-4 h-4 text-orange-600 bg-orange-600 border-orange-600 dark:bg-gray-600 dark:border-gray-500"
-                      />
-                      <label
-                        htmlFor={`type-${option}`}
-                        className="w-full py-3 text-sm font-medium capitalize text-gray-900 dark:text-gray-300"
-                      >
-                        {option}
-                      </label>
-                    </div>
-                  ))
-                )}
+                      {option}
+                    </label>
+                  </div>
+                ))}
               </div>
 
-              {networkError ? (
-                <p className="text-red-500">Error: {networkError}</p> // Display network error message
-              ) : questionType === "pair" ? (
+              {questionType === "pair" ? (
                 <EnglishQuestionPairForm
                   editQuestion={editQuestion}
                   setEditQuestion={setEditQuestion}
@@ -841,7 +771,6 @@ function EditQuestion() {
                   optionsArray={optionsArray}
                   handlePairQuestionChange={handlePairQuestionChange}
                   handleAddPair={handleAddPair}
-                  handleStatementQuestionChange={handleStatementQuestionChange}
                   inputs={inputs.english} // Pass inputs as prop
                   handleInputChange={handleInputChange}
                 />
@@ -854,7 +783,6 @@ function EditQuestion() {
                   handleChange={handleChange}
                   handleCheck={handleCheck}
                   optionsArray={optionsArray}
-                  handlePairQuestionChange={handleStatementQuestionChange}
                   handleAddStatement={addStatementQuestion}
                 />
               ) : (
@@ -866,9 +794,8 @@ function EditQuestion() {
                   optionsArray={optionsArray}
                 />
               )}
-              {networkError ? (
-                <p className="text-red-500">Error: {networkError}</p>
-              ) : questionType === "pair" ? (
+
+              {questionType === "pair" ? (
                 <HindiQuestionPairForm
                   editQuestion={editQuestion}
                   setEditQuestion={setEditQuestion}
@@ -892,7 +819,6 @@ function EditQuestion() {
                   handleChange={handleChange}
                   handleCheck={handleCheck}
                   optionsArray={optionsArray}
-                  handlePairQuestionChange={handleStatementQuestionChange}
                   handleAddStatement={addStatementQuestion}
                 />
               ) : (
@@ -904,6 +830,7 @@ function EditQuestion() {
                   optionsArray={optionsArray}
                 />
               )}
+
               <div className="mt-6 text-center">
                 <button
                   type="button"
@@ -912,7 +839,7 @@ function EditQuestion() {
                   disabled={isLoading} // Disable the button during loading
                 >
                   {isLoading ? (
-                    <span>Saving...</span> // Show loading text in the button during save operation
+                    <span>Saving...</span>
                   ) : (
                     <>
                       <VscSaveAs className="mr-2" />

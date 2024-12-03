@@ -48,21 +48,7 @@ const HindiQuestionPairForm = ({
           questionType={"pair"}
         />
       </div>
-      {/* {editQuestion.hindiQuestion?.pairQuestion?.length > 0 &&
-          editQuestion.hindiQuestion.pairQuestion.map((pair, index) => {
-            const [question, answer] = pair.split(" - ");
-            return (
-              <div key={index} className="grid grid-cols-2 gap-x-2">
-                <span className="border border-green-300 p-2 text-gray-600 dark:text-gray-400">
-                  {question}
-                </span>
-                <span className="border border-green-300 p-2 text-gray-600 dark:text-gray-400">
-                  {answer}
-                </span>
-              </div>
-            );
-          })} */}
-
+   
       {/* Statement Question */}
       <div className="space-y-2">
         <label className="text-lg font-medium text-gray-900 dark:text-white">
@@ -73,7 +59,7 @@ const HindiQuestionPairForm = ({
           id="statement"
           type="text"
           placeholder="Enter statement"
-          value={editQuestion.hindiQuestion.lastQuestion}
+          value={editQuestion.hindiQuestion.lastQuestion || ""}
           onChange={handleStatementQuestionChange}
           name="hindiQuestion.lastQuestion"
         />

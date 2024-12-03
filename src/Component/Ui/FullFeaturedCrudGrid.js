@@ -1,149 +1,74 @@
-import * as React from "react";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/DeleteOutlined";
-import SaveIcon from "@mui/icons-material/Save";
-import CancelIcon from "@mui/icons-material/Close";
+import React from "react";
 import {
-  GridRowModes,
   DataGrid,
-  GridToolbarContainer,
   GridActionsCellItem,
+  GridRowModes,
   GridRowEditStopReasons,
 } from "@mui/x-data-grid";
-import {
-  randomCreatedDate,
-  randomTraderName,
-  randomId,
-  randomArrayItem,
-} from "@mui/x-data-grid-generator";
-
-const roles = ["Market", "Finance", "Development"];
-const randomRole = () => {
-  return randomArrayItem(roles);
-};
-
-const initialRows = [
-  {
-    id: randomId(),
-    name: randomTraderName(),
-    age: 25,
-    joinDate: randomCreatedDate(),
-    role: randomRole(),
-  },
-  {
-    id: randomId(),
-    name: randomTraderName(),
-    age: 36,
-    joinDate: randomCreatedDate(),
-    role: randomRole(),
-  },
-  {
-    id: randomId(),
-    name: randomTraderName(),
-    age: 19,
-    joinDate: randomCreatedDate(),
-    role: randomRole(),
-  },
-  {
-    id: randomId(),
-    name: randomTraderName(),
-    age: 28,
-    joinDate: randomCreatedDate(),
-    role: randomRole(),
-  },
-  {
-    id: randomId(),
-    name: randomTraderName(),
-    age: 23,
-    joinDate: randomCreatedDate(),
-    role: randomRole(),
-  },
-];
-
-// EditToolbar component
-// function EditToolbar(props) {
-//   const { setRows, setRowModesModel } = props;
-
-//   const handleClick = () => {
-//     const id = randomId();
-//     setRows((oldRows) => [
-//       ...oldRows,
-//       { id, name: "", age: "", role: "", isNew: true },
-//     ]);
-//     setRowModesModel((oldModel) => ({
-//       ...oldModel,
-//       [id]: { mode: GridRowModes.Edit, fieldToFocus: "name" },
-//     }));
-//   };
-
-//   return (
-//     <GridToolbarContainer>
-//       <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-//         Add record
-//       </Button>
-//     </GridToolbarContainer>
-//   );
-// }
+import { Box, Button } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Cancel";
 
 function EditToolbar(props) {
   const { setRows, setRowModesModel, questionType } = props;
 
   const handleClick = () => {
-    const id = randomId(); // Generate a random id
-    const newRow = {
-      id,
-      isNew: true,
-      ...(questionType === "pair"
-        ? { pairA: "", pairB: "" }
-        : { statement: [""] }),
-    };
+    const id = Math.random().toString(36).substr(2, 9); // Generate a unique ID
+    const newRow =
+      questionType === "statement"
+        ? { id, statement: "", isNew: true }
+        : { id, pairA: "", pairB: "", isNew: true };
 
     setRows((oldRows) => [...oldRows, newRow]);
 
-    // Set the row to Edit mode, focus on the appropriate field
     setRowModesModel((oldModel) => ({
       ...oldModel,
       [id]: {
         mode: GridRowModes.Edit,
-        fieldToFocus: questionType === "pair" ? "pairA" : "statement",
+        fieldToFocus: questionType === "statement" ? "statement" : "pairA",
       },
     }));
   };
 
   return (
-    <GridToolbarContainer>
+    <Box
+      sx={{ display: "flex", justifyContent: "space-between", padding: "10px" }}
+    >
       <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
         Add record
       </Button>
-    </GridToolbarContainer>
+      {/* Additional buttons can be added here if needed */}
+    </Box>
   );
 }
 
-// FullFeaturedCrudGrid component
 export default function FullFeaturedCrudGrid({
   pairQuestion,
-  language,
   handleChange,
+  language,
   questionType,
 }) {
   const [rows, setRows] = React.useState(() => {
     return (
-      pairQuestion?.map((pair) => {
-        // If questionType is "statement", handle it directly as "statement" field
+      pairQuestion?.map((pair, index) => {
+        const id = pair.id || index; // Ensure you have a unique ID
         if (questionType === "statement") {
-          return { id: pair.id, statement: pair.statement };  // Convert to an array for statements
+          return { id: id, statement: pair.statement };
         }
-  
-        // If it's "pair" type, process it accordingly
-        if (questionType === "pair" && pair.combined && pair.combined.includes("---")) {
+
+        if (
+          questionType === "pair" &&
+          pair.combined &&
+          pair.combined.includes("---")
+        ) {
           const [pairA, ...rest] = pair.combined.split("---");
           const pairB = rest.join("---").trim();
-          return { id: pair.id, pairA: pairA.trim(), pairB: pairB.trim() };
+          return { id, pairA: pairA.trim(), pairB: pairB.trim() };
         }
-  
+
         return null;
       }) || []
     );
@@ -163,20 +88,10 @@ export default function FullFeaturedCrudGrid({
 
   const handleSaveClick = (id) => () => {
     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
-    const updatedRow = rows.find((row) => row.id === id);
-    setRows((prevRows) =>
-      prevRows.map((row) => (row.id === id ? { ...row, isNew: false } : row))
-    );
-    handleChange({ type: "save", rowIndex: id, rowData: updatedRow }, language);
   };
 
   const handleDeleteClick = (id) => () => {
-    setRows(rows.filter((row) => row.id !== id));
-    const deletedRow = rows.find((row) => row.id === id);
-    handleChange(
-      { type: "delete", rowIndex: id, rowData: deletedRow },
-      language
-    );
+    setRows(rows.filter((row) => row.id !== id)); // Delete the row
   };
 
   const handleCancelClick = (id) => () => {
@@ -187,8 +102,7 @@ export default function FullFeaturedCrudGrid({
 
     const editedRow = rows.find((row) => row.id === id);
     if (editedRow.isNew) {
-      setRows(rows.filter((row) => row.id !== id));
-      handleChange({ type: "cancel", rowIndex: id }, language);
+      setRows(rows.filter((row) => row.id !== id)); // Remove the new row if canceled
     }
   };
 
@@ -196,26 +110,9 @@ export default function FullFeaturedCrudGrid({
     const updatedRow = { ...newRow, isNew: false };
     setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
 
-    if (questionType === "statement") {
-      setRows((prevRows) =>
-        prevRows.map((row) =>
-          row.id === newRow.id
-            ? { ...row, statement: [...row.statement, newRow.statement] }
-            : row
-        )
-      );
-    } else {
-      setRows((prevRows) =>
-        prevRows.map((row) =>
-          row.id === newRow.id ? { ...newRow, isNew: false } : row
-        )
-      );
+    if (handleChange) {
+      handleChange({ type: "update", rowData: newRow }, language); // Call the handleChange function
     }
-
-    handleChange(
-      { type: "update", rowIndex: newRow.id, rowData: newRow },
-      language
-    );
 
     return updatedRow;
   };
@@ -224,14 +121,17 @@ export default function FullFeaturedCrudGrid({
     setRowModesModel(newRowModesModel);
   };
 
+  const handleProcessRowUpdateError = (error) => {
+    console.error("Error processing row update:", error);
+  };
+
   const columns = [
     {
       field: questionType === "pair" ? "pairA" : "statement",
-      headerName: questionType === "pair" ? "Pair A" : "Statement",
+      headerName: questionType === "pair" ? " Pair A" : "Statement",
       flex: 1,
       minWidth: 180,
       editable: true,
-      
     },
     ...(questionType === "pair"
       ? [
@@ -308,11 +208,13 @@ export default function FullFeaturedCrudGrid({
       <DataGrid
         rows={rows}
         columns={columns}
+        getRowId={(row) => row.id} // Use this to specify how to get the row ID
         editMode="row"
         rowModesModel={rowModesModel}
         onRowModesModelChange={handleRowModesModelChange}
         onRowEditStop={handleRowEditStop}
         processRowUpdate={processRowUpdate}
+        onProcessRowUpdateError={handleProcessRowUpdateError}
         slots={{
           toolbar: EditToolbar,
         }}
@@ -323,3 +225,5 @@ export default function FullFeaturedCrudGrid({
     </Box>
   );
 }
+
+// export default EmployeeDetailsTable;

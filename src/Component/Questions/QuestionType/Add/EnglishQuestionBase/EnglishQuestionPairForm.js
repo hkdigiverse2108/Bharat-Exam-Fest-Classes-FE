@@ -56,7 +56,7 @@ const EnglishQuestionPairForm = ({
           id="username"
           type="text"
           placeholder="Enter statement"
-          value={addQuestion.englishQuestion.lastQuestion || currentStatement}
+          value={addQuestion.englishQuestion.lastQuestion || ""}
           onChange={handleStatementQuestionChange}
           name="englishQuestion.lastQuestion"
         />

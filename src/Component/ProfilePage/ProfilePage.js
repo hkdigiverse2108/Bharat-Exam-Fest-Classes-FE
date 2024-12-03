@@ -14,7 +14,9 @@ export default function ProfilePage() {
   const dispatch = useDispatch();
   const userData = useSelector((state) => state.userConfig.classesData);
   const accessToken = useSelector(
-    (state) => state.authConfig.userInfo[0]?.data?.token
+    (state) =>
+      state.authConfig.userInfo[0]?.data?.token ||
+      state.authConfig.userInfo[0]?.token
   );
   const [formData, setFormData] = useState({
     classesId: "",

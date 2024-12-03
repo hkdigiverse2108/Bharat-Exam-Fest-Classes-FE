@@ -179,7 +179,7 @@ export const fetchData = async (token, subject, signal) => {
     if (response1.status === 200 && response2.status === 200) {
       const subTopic = response1?.data?.data?.sub_topic_data || [];
       const subjects = response2?.data?.data || [];
-      console.log(subjects);
+      // console.log("subjectsApiData", subjects);
 
       const convertedSubTopics = subTopic.map((topic) => ({
         ...topic,
@@ -204,11 +204,9 @@ export const fetchData = async (token, subject, signal) => {
           : null,
       }));
 
-      console.log(convertedSubjects);
-
       return {
         subTopic: convertedSubTopics,
-        subjects: convertedSubjects[0],
+        subjects: convertedSubjects,
       };
     } else {
       if (response1.status !== 200) {

@@ -1,4 +1,10 @@
-import React, { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { CurrentData, SubjectData } from "../../Context/Action/index";
 import axios from "axios";
@@ -10,8 +16,10 @@ import "react-toastify/dist/ReactToastify.css";
 
 function SubjectPage() {
   const { _id } = useSelector((state) => state.userConfig.classesData);
-   const accessToken = useSelector(
-    (state) => state.authConfig.userInfo[0]?.data?.token
+  const accessToken = useSelector(
+    (state) =>
+      state.authConfig.userInfo[0]?.data?.token ||
+      state.authConfig.userInfo[0]?.token
   );
 
   const navigate = useNavigate();
@@ -40,8 +48,12 @@ function SubjectPage() {
 
     try {
       // Use the fetchSubjects function, passing the necessary parameters
-      const { totalQuestions, subjects } = await fetchSubjects(accessToken, _id, signal);
-console.log(subjects);
+      const { totalQuestions, subjects } = await fetchSubjects(
+        accessToken,
+        _id,
+        signal
+      );
+      console.log("subject-Data", subjects);
 
       if (!subjects || !totalQuestions) {
         console.log("No data received");
@@ -88,7 +100,7 @@ console.log(subjects);
       }
     };
   }, [debounceGetData, accessToken, _id]);
-  
+
   // useEffect(() => {
   //   const fetchSubjectsData = async () => {
   //     setIsLoading(true);

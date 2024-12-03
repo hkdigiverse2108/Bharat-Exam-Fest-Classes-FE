@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormHelperText,
-} from "@mui/material";
+import { FormControl, Select, MenuItem } from "@mui/material";
 
 const ITEM_HEIGHT = 20;
 const ITEM_PADDING_TOP = 4;
@@ -18,24 +12,36 @@ const MenuProps = {
   },
 };
 
-export default function SingleSelect({ label, value, onChange, options }) {
+export default function SingleSelect({
+  label,
+  selectedValue,
+  onChange,
+  options,
+}) {
   return (
     <>
-      <FormControl className="container h-full" size="small">
-        <InputLabel id={`${label}-label`} size="small"></InputLabel>
+      <FormControl className="container h-full" size="small" fullWidth>
         <Select
-          labelId="my-select-label"
           id={label}
-          value={value}
+          value={selectedValue}
           onChange={onChange}
           displayEmpty
+          fullWidth
         >
           <MenuItem value="">
             <em>None</em>
           </MenuItem>
-          <MenuItem value={options} className="capitalize">
-            {options.name}
-          </MenuItem>
+          {options && options.length > 0 ? (
+            options?.map((option) => (
+              <MenuItem key={option._id} value={option} className="capitalize">
+                {option.name}
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem value="">
+              <em>No Options Available</em>
+            </MenuItem>
+          )}
         </Select>
       </FormControl>
     </>

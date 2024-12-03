@@ -1,7 +1,15 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { TfiPlus, TfiFilter, TfiPencil } from "react-icons/tfi";
 import { AiOutlineDelete } from "react-icons/ai";
 import ConfirmationPage from "./ConfirmationPage";
+import Loading from "../Loader/Loading";
+import NoDataFound from "../Ui/NoDataFound";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -9,7 +17,6 @@ import FilterSide from "../Filterpage/FilterSide";
 import MultiSelection from "../Ui/MultiSelection";
 import { useDispatch, useSelector } from "react-redux";
 import { CurrentQuestion, QuestionList } from "../../Context/Action";
-import SingleSelect from "../Ui/SingleSelect";
 import FilterQuestion from "../Ui/FilterQuestion";
 import {
   deleteExistQuestion,
@@ -17,14 +24,15 @@ import {
   getQuestionData,
 } from "../../Hooks/QuestionsApi";
 import { fetchSubjects } from "../../Hooks/getSubjectApi";
-import Loading from "../Loader/Loading";
 
 function SubjectDetails() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { _id } = useSelector((state) => state.userConfig.classesData);
-   const accessToken = useSelector(
-    (state) => state.authConfig.userInfo[0]?.data?.token
+  const accessToken = useSelector(
+    (state) =>
+      state.authConfig.userInfo[0]?.data?.token ||
+      state.authConfig.userInfo[0]?.token
   );
   const CurrentSubject = useSelector(
     (state) => state.userConfig.CurrentSubject
@@ -134,108 +142,6 @@ function SubjectDetails() {
     }
   }, [error]);
 
-  // Fetch subjects data (example from previous part)
-  // useEffect(() => {
-  //   const fetchSubjectsData = async () => {
-  //     setIsLoading(true);
-  //     try {
-  //       const { subjects } = await fetchSubjects(accessToken, _id);
-  //       setSubjectData(subjects);
-  //       // setQustions(totalQuestions);
-  //       setIsLoading(false); // Set loading to false after data is fetched
-  //     } catch (error) {
-  //       setIsLoading(false); // Set loading to false if there's an error
-  //       setNetworkError(error.message || "Network error occurred"); // Store the error message
-  //       toast.error(
-  //         "Error fetching subjects: " + (error.message || "Unknown error")
-  //       ); // Show error toast
-  //     }
-  //   };
-
-  //   fetchSubjectsData();
-  // }, [_id, accessToken]);
-
-  // // Get Questions function
-  // const getQuestions = async () => {
-  //   setIsLoading(true); // Set loading to true before making the API call
-  //   try {
-  //     const data = await fetchQuestionsBySubject(
-  //       accessToken,
-  //       CurrentSubject?._id,
-  //       _id
-  //     );
-  //     if (!data) {
-  //       console.log("No data received", data);
-  //       return;
-  //     }
-
-  //     const { Questions = [], subTopics = [] } = data;
-  //     setQustions(Questions);
-  //     setSubtopics(subTopics);
-  //     dispatch(CurrentQuestion(Questions));
-
-  //     const filteredData = subTopics.filter((subject) =>
-  //       CurrentSubject?.subTopics?.some(
-  //         (criteria) => subject._id === criteria._id
-  //       )
-  //     );
-
-  //     if (filteredData.length > 0) {
-  //       setSelectedSubtopic(filteredData[0]);
-  //     } else {
-  //       console.log("No matching subtopics found");
-  //     }
-  //   } catch (err) {
-  //     console.error("Error fetching questions:", err);
-  //     setNetworkError(
-  //       `Error fetching questions: ${err.message || "Unknown error"}`
-  //     );
-  //     toast.error(err.message || "Error fetching questions");
-  //   } finally {
-  //     setIsLoading(false); // Set loading to false after the request is done
-  //   }
-  // };
-
-  // // Delete question function
-  // const deleteQuestion = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     const response = await deleteExistQuestion(accessToken, itemToDelete);
-
-  //     if (response.status === 200) {
-  //       console.log("deleteQuestion response:", response);
-  //       const successMessage =
-  //         response.data?.message || "Question deleted successfully.";
-  //       toast.success(successMessage);
-
-  //       // Call the function to refresh or get the updated list of questions
-  //       getQuestions();
-
-  //       // Close the confirmation dialog and reset the item to delete
-  //       setConfirm(false);
-  //       setItemToDelete(null);
-  //     } else {
-  //       // If the API doesn't return a success status, show an error message
-  //       toast.warn(response.data?.message || "Failed to delete question");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error deleting question:", error);
-
-  //     // Handle different types of errors:
-  //     // - Network errors
-  //     // - API errors
-  //     toast.error(
-  //       error.response?.data?.message ||
-  //         error.message ||
-  //         "Failed to delete question"
-  //     );
-  //     setNetworkError(error.message || "Failed to delete question");
-  //   } finally {
-  //     setIsLoading(false); // Always set loading to false after the operation is done
-  //   }
-  // };
-
-  // Sorting Questions based on filters
   const sortedQuestions = useMemo(() => {
     if (!Array.isArray(questions)) {
       console.error("Questions is not an array:", questions);
@@ -274,13 +180,6 @@ function SubjectDetails() {
       console.error("Questions is not an array:", questions);
     }
   }, [questions]);
-
-  // When CurrentSubject or _id changes, fetch questions
-  // useEffect(() => {
-  //   if (CurrentSubject?._id && _id) {
-  //     getQuestions();
-  //   }
-  // }, [CurrentSubject?._id, _id]);
 
   const debounceTimeoutRef = useRef(null);
 
@@ -446,7 +345,7 @@ function SubjectDetails() {
 
   return (
     <>
-      <section className="bg-white dark:bg-gray-900 p-4 overflow-y-auto rounded-lg border border-slate-300 font-sans">
+      <section className="bg-white dark:bg-gray-900 p-4 overflow-y-auto min-h-full rounded-lg border border-slate-300 font-sans">
         <div className="space-y-10">
           {/* Filter and Create Buttons */}
           <div className="space-y-4">
@@ -485,9 +384,8 @@ function SubjectDetails() {
             </div>
           </div>
 
-
           {isLoading ? (
-            <Loading/>
+            <Loading />
           ) : networkError ? (
             <p className="text-red-500">Error: {networkError}</p>
           ) : (
@@ -495,12 +393,13 @@ function SubjectDetails() {
               {questions.length > 0 ? (
                 <ul className="space-y-4">
                   {filteredQuestions
-                    .filter((question) =>
-                      subTopicName !== null
-                        ? question.subtopicIds &&
-                          question.subtopicIds.length > 0 &&
-                          question.subtopicIds.includes(subTopicName)
-                        : question
+                    .filter(
+                      (question) =>
+                        subTopicName
+                          ? question.subtopicIds &&
+                            question.subtopicIds.length > 0 &&
+                            question.subtopicIds.includes(subTopicName)
+                          : true // Return all questions when subTopicName is null or undefined
                     )
                     .map((value, index) => (
                       <li key={index} className="space-y-2">
@@ -548,7 +447,7 @@ function SubjectDetails() {
                     ))}
                 </ul>
               ) : (
-                <p>No questions found</p>
+                <NoDataFound />
               )}
             </div>
           )}
@@ -573,13 +472,12 @@ function SubjectDetails() {
         </div>
       </section>
       <ToastContainer
-        draggable={false}
-        autoClose={2000}
-        position={"top-center"}
+        position="top-right"
+        autoClose={5000}
         hideProgressBar={false}
-        newestOnTop={true}
-        closeOnClick={false}
-        theme="dark"
+        closeOnClick={true}
+        pauseOnHover={true}
+        draggable={true}
       />
     </>
   );

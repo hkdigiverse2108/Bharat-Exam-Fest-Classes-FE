@@ -7,12 +7,11 @@ import React, {
 } from "react";
 import MultiSelection from "../Ui/MultiSelection";
 import { VscSaveAs } from "react-icons/vsc";
-import axios from "axios";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import SingleSelect from "../Ui/SingleSelect";
 import RadioButtons from "../Ui/RadioButtons";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import HindiQuestionPairForm from "./QuestionType/Add/HindiQuestionBase/HindiQuestionPairForm";
 import EnglishQuestionPairForm from "./QuestionType/Add/EnglishQuestionBase/EnglishQuestionPairForm";
@@ -23,15 +22,19 @@ import HindiQueStatementBaseform from "./QuestionType/Add/HindiQuestionBase/Hind
 import { addNewQuestion } from "../../Hooks/QuestionsApi";
 import { fetchData } from "../../Hooks/getSubjectApi";
 import Loading from "../Loader/Loading";
-import Testing from "../Ui/FullFeaturedCrudGrid";
 
 function AddQuestion() {
   const navigate = useNavigate();
   const classId = useSelector(
-    (state) => state.authConfig.userInfo[0]?.data?._id
+    (state) =>
+      state.authConfig.userInfo[0]?.data?._id ||
+      state.authConfig.userInfo[0]?._id
   );
+
   const accessToken = useSelector(
-    (state) => state.authConfig.userInfo[0]?.data?.token
+    (state) =>
+      state.authConfig.userInfo[0]?.data?.token ||
+      state.authConfig.userInfo[0]?.token
   );
   const subject = useSelector((state) => state.userConfig?.CurrentSubject?._id);
 
@@ -96,61 +99,6 @@ function AddQuestion() {
       };
     }
   });
-  // useEffect(() => {
-  //   setAddQuestion(() => {
-  //     if (questionType === "normal") {
-  //       return {
-  //         subjectId: "",
-  //         classesId: classId,
-  //         subtopicIds: [],
-  //         type: type,
-  //         questionType: questionType,
-  //         englishQuestion: {
-  //           question: "",
-  //           answer: "",
-  //           solution: "",
-  //           options: { A: "", B: "", C: "", D: "" },
-  //           statementQuestion: [],
-  //           pairQuestion: [],
-  //         },
-  //         hindiQuestion: {
-  //           question: "",
-  //           answer: "",
-  //           solution: "",
-  //           options: { A: "", B: "", C: "", D: "" },
-  //           statementQuestion: [],
-  //           pairQuestion: [],
-  //         },
-  //       };
-  //     } else {
-  //       return {
-  //         subjectId: subject,
-  //         classesId: classId,
-  //         subtopicIds: [],
-  //         type: type,
-  //         questionType: questionType,
-  //         englishQuestion: {
-  //           question: "",
-  //           answer: "",
-  //           solution: "",
-  //           options: { A: "", B: "", C: "", D: "" },
-  //           statementQuestion: [],
-  //           pairQuestion: [],
-  //           lastQuestion: "", // Add lastQuestion for non-normal types
-  //         },
-  //         hindiQuestion: {
-  //           question: "",
-  //           answer: "",
-  //           solution: "",
-  //           options: { A: "", B: "", C: "", D: "" },
-  //           statementQuestion: [],
-  //           pairQuestion: [],
-  //           lastQuestion: "", // Add lastQuestion for non-normal types
-  //         },
-  //       };
-  //     }
-  //   });
-  // }, [classId, questionType, subject, type]);
 
   const [options, setOptions] = useState({
     AnswerOption: { A: false, B: false, C: false, D: false },
@@ -255,24 +203,6 @@ function AddQuestion() {
       ...prev,
       subtopicIds: uniqueValues,
     }));
-    // const selectedId = value[0]?._id;
-    // // Check if the subtopicId already exists in the array
-    // const isSelected = addQuestion.subtopicIds.includes(selectedId);
-
-    // // If it's selected, remove it, otherwise add it
-    // const subtopicIds = isSelected
-    //   ? addQuestion.subtopicIds.filter((id) => id !== selectedId) // Remove from subtopicIds
-    //   : [...addQuestion.subtopicIds, selectedId];
-
-    // setAddQuestion((prev) => ({
-    //   ...prev,
-    //   subtopicIds: subtopicIds,
-    // }));
-
-    // const updatedSelectedSubtopics = isSelected
-    //   ? value.filter((subtopic) => subtopic._id !== selectedId) // Remove from selectedSubtopic
-    //   : [...selectedSubtopic, value[0]]; // Add to selectedSubtopic
-    // setSelectedSubtopic(updatedSelectedSubtopics);
   };
 
   const [currentEngStatement, setCurrentEngStatement] = useState("");
@@ -282,41 +212,42 @@ function AddQuestion() {
 
   const addStatementQuestion = (value, language) => {
     console.log(value);
-  
+
     // Check if rowData exists
     if (!value?.rowData) {
       console.log("No row data available");
       return;
     }
-  
-    const { statement, id } = value?.rowData;
-  
+
+    const { statement, id } = value.rowData;
+
     // Validate the statement
     if (typeof statement !== "string") {
       console.log("Invalid input data: statement is not a string");
       return;
     }
-  
+
     if (!statement.trim()) {
       console.log("Invalid pair: Missing statement");
       return;
     }
-  
-    const finalCombined = { id, statement }; // Create the combined data object
-    console.log(finalCombined);
-  
+
+    const finalCombined = {
+      id: id,
+      statement: statement,
+    };
+
     // Update based on language
     if (language === "englishQuestion") {
       setAddQuestion((prev) => {
         const updatedStatements = prev.englishQuestion.statementQuestion.map(
-          (item) => (item.id === id ? { ...item, statement } : item)
+          (item) => (item.id === id ? { ...item, finalCombined } : item)
         );
-  
-        // Only push the statement if the id does not already exist in the array
+
         if (!updatedStatements.some((item) => item.id === id)) {
-          updatedStatements.push(finalCombined);  // Add the statement object
+          updatedStatements.push(finalCombined);
         }
-  
+
         return {
           ...prev,
           englishQuestion: {
@@ -328,16 +259,16 @@ function AddQuestion() {
     } else if (language === "hindiQuestion") {
       setAddQuestion((prev) => {
         const updatedStatements = prev.hindiQuestion.statementQuestion.map(
-          (item) => (item.id === id ? { ...item, statement } : item)
+          (item) => (item.id === id ? { ...item, finalCombined } : item)
         );
-  
+
         // Only push the statement if the id does not already exist in the array
         if (!updatedStatements.some((item) => item.id === id)) {
-          updatedStatements.push(finalCombined);  // Add the statement object
+          updatedStatements.push(finalCombined); // Add the statement object
         }
-  
+
         console.log(updatedStatements);
-  
+
         return {
           ...prev,
           hindiQuestion: {
@@ -348,35 +279,6 @@ function AddQuestion() {
       });
     }
   };
-  
-
-  // const handleStatementQuestionChange = (event) => {
-  //   const { name, value } = event.target;
-  //   const [lang, field, option] = name.split(".");
-  //   const currentQuestionType = addQuestion.questionType;
-
-  //   if (currentQuestionType === "pair") {
-  //     setAddQuestion((prev) => ({
-  //       ...prev,
-  //       [lang]: {
-  //         ...prev[lang],
-  //         [field]: value,
-  //       },
-  //     }));
-  //     setCurrentEngPair("");
-  //     setCurrentHindiPair("");
-  //   } else if (currentQuestionType === "statement") {
-  //     setAddQuestion((prev) => ({
-  //       ...prev,
-  //       [lang]: {
-  //         ...prev[lang],
-  //         [field]: value,
-  //       },
-  //     }));
-  //     setCurrentEngStatement("");
-  //     setCurrentHindiStatement("");
-  //   }
-  // };
 
   const handlePairQuestionChange = (language, index, field, value) => {
     const updatedPairQuestion = [...addQuestion[language].pairQuestion];
@@ -474,6 +376,8 @@ function AddQuestion() {
   };
 
   const handleAddPair = (value, language) => {
+    console.log(value);
+
     if (!value?.rowData) {
       console.log("No row data available");
       return; // Exit early if rowData is undefined
@@ -495,7 +399,6 @@ function AddQuestion() {
     const combinedPair = `${pairA} --- ${pairB}`;
 
     const finalCombined = {
-      id: id,
       combined: combinedPair,
     };
 
@@ -542,11 +445,10 @@ function AddQuestion() {
     }
   };
 
-  useEffect(() => {
-    console.log("ADD QUESTION", addQuestion);
-  }, [addQuestion]);
+  // useEffect(() => {
+  //   console.log("ADD_QUESTION", addQuestion);
+  // }, [addQuestion]);
 
-  const [debounceTimeout, setDebounceTimeout] = useState(null);
   const debounceTimeoutRef = useRef(null);
 
   const handleGetData = useCallback(async () => {
@@ -563,13 +465,16 @@ function AddQuestion() {
         signal
       );
 
-      if (!subjects || !subTopic) {
+      if (!subjects || subjects.length === 0 || !subTopic) {
         console.log("No data received");
+        setSubjectname([]);
+        setSelectedSubject("");
+        setSubtopics([]);
         return;
       }
 
       setSubjectname(subjects);
-      setSelectedSubject(subjects);
+      setSelectedSubject(subjects[0] || []);
       setSubtopics(subTopic);
     } catch (error) {
       if (error.name === "AbortError") {
@@ -585,37 +490,25 @@ function AddQuestion() {
     return () => {
       controller.abort(); // Cleanup function to abort the fetch
     };
-  }, [accessToken]);
-
+  }, [accessToken, subject]);
   const debounceGetData = useCallback(() => {
     if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current); // Clear previous timeout
+      clearTimeout(debounceTimeoutRef.current);
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
       handleGetData();
-    }, 500); // Adjust debounce time as needed
+    }, 500);
   }, [handleGetData]);
-
   useEffect(() => {
     debounceGetData();
 
     return () => {
       if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current); // Cleanup on unmount
+        clearTimeout(debounceTimeoutRef.current);
       }
     };
-  }, [debounceGetData]);
-
-  useEffect(() => {
-    debounceGetData();
-
-    return () => {
-      if (debounceTimeout) {
-        clearTimeout(debounceTimeout); // Cleanup on unmount
-      }
-    };
-  }, [debounceGetData, debounceTimeout, subject]);
+  }, [debounceGetData, subject]);
 
   const isEmpty = () => {
     const { englishQuestion, hindiQuestion } = addQuestion;
@@ -645,23 +538,26 @@ function AddQuestion() {
 
   const handleSubmit = async () => {
     if (isEmpty()) {
-      toast.warning("Please fill up empty fields.");
+      toast.warning("Please fill up all the required fields.");
     } else {
       try {
         const response = await addNewQuestion(addQuestion, accessToken);
+
         if (response.status === 200) {
-          toast.success(
-            response.data.message || "Question added successfully!"
-          );
+          const message = response.data.message || "Question add successfully!";
+          toast.success(message);
           console.log("Question added successfully:", response);
-          handleNavigate();
+          handleNavigate(); // Navigate to another page if required
         } else {
+          // Handle non-200 responses
           toast.warn(
             response.data.message || "Something went wrong. Please try again!"
           );
           console.log("Error adding question:", response);
         }
       } catch (error) {
+        // Handle errors with toast and log the error
+        toast.error("An error occurred. Please try again later.");
         console.error("Error adding question:", error);
       }
     }
@@ -689,8 +585,8 @@ function AddQuestion() {
                 <Loading />
               ) : (
                 <>
-                  <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-4 lg:gap-2 xl:grid-cols-4 xl:gap-3 2xl:grid-cols-4 2xl:gap-6">
-                    <div className="space-y-2">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 overflow-none">
+                    <div className="space-y-2 w-full">
                       <label className="font-medium text-gray-900 text-start capitalize text-md dark:text-white">
                         Subject
                       </label>
@@ -699,10 +595,11 @@ function AddQuestion() {
                         value={selectedSubject}
                         onChange={handleSubjectChange}
                         options={subjectname}
+                        className="w-full"
                       />
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 w-full">
                       <label className="font-medium text-gray-900 text-start capitalize text-md dark:text-white">
                         Subtopic
                       </label>
@@ -711,18 +608,23 @@ function AddQuestion() {
                         value={selectedSubtopic}
                         onChange={handleSubtopicChange}
                         options={subtopics}
+                        className="w-full"
                       />
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-4 w-full">
                       <label className="font-medium text-gray-900 text-start capitalize text-md dark:text-white">
-                        Question Type
+                        Type
                       </label>
-                      <RadioButtons
-                        options={radioOptions}
-                        checkedValue={type}
-                        onChange={handleTypeChange}
-                      />
+
+                      <div className="flex flex-col md:flex-row md:space-x-6 space-y-4 md:space-y-0 w-full">
+                        <RadioButtons
+                          options={radioOptions}
+                          checkedValue={type}
+                          onChange={handleTypeChange}
+                          className="w-full"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -851,11 +753,12 @@ function AddQuestion() {
           )}
         </div>
         <ToastContainer
-          draggable={false}
-          autoClose={2000}
+          position="top-right"
+          autoClose={5000}
           hideProgressBar={false}
-          newestOnTop={true}
-          closeOnClick={false}
+          closeOnClick={true}
+          pauseOnHover={true}
+          draggable={true}
           theme="dark"
         />
       </section>
