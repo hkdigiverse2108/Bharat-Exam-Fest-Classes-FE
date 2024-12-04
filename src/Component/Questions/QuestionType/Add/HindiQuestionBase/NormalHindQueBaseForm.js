@@ -4,7 +4,7 @@ import { MdStar } from "react-icons/md";
 const NormalHindQueBaseForm = ({
   addQuestion,
   handleChange,
-  optionsArray,
+  options,
   handleCheck,
   setAddQuestion,
 }) => {
@@ -29,7 +29,6 @@ const NormalHindQueBaseForm = ({
           type="text"
           placeholder="Enter question"
           name="hindiQuestion.question"
-          value={addQuestion.hindiQuestion.question}
           onChange={handleChange}
         />
 
@@ -65,26 +64,23 @@ const NormalHindQueBaseForm = ({
           </p>
           <div className="md:flex sm:flex text-sm font-medium text-gray-900 space-x-6 text-start dark:text-white">
             <ul className="flex items-center justify-start gap-x-6 w-full text-sm font-medium text-gray-900">
-              {optionsArray.map((option) => (
-                <li
-                  key={option.value}
-                  className="border-b border-gray-200 rounded-t-lg dark:border-gray-600"
-                >
+              {Object.keys(options.AnswerOption).map((key) => (
+                <li key={key}>
                   <div className="flex items-center ps-3">
                     <input
-                      id={`radio${option.value}`}
+                      id={`radio${key}`}
                       type="radio"
-                      name="hindiQuestion.answer"
-                      value={option.value}
-                      checked={addQuestion.hindiQuestion.answer === option.value}
-                      onChange={(e) => handleCheck("hindiQuestion", e)}
+                      name="hindiQuestion.answer" // Ensure you're using the correct name for the state structure
+                      value={key} // Use the key (A, B, C, D) as the value
+                      checked={addQuestion.hindiQuestion.answer === key} // Ensure the correct radio button is checked
+                      onChange={(e) => handleCheck(e)} // Call handleCheck for hindiQuestion selection
                       className="w-4 h-4 text-blue-600 border-gray-300 checked:bg-blue-600 checked:outline-none"
                     />
                     <label
-                      htmlFor={`radio${option.value}`}
+                      htmlFor={`radio${key}`}
                       className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
                     >
-                      {option.label}
+                      Option {key} {/* The key will be 'A', 'B', 'C', 'D' */}
                     </label>
                   </div>
                 </li>

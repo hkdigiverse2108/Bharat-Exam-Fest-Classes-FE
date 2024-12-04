@@ -11,9 +11,9 @@ const OtpVerify = ({
   handleChangeOTP,
   handleOtpverify,
 }) => {
-  const otpRefs = useRef([]); // Create refs for each OTP input field
+  const otpRefs = useRef([]); 
 
-  // This function handles the cursor movement
+ 
   const handleOtpChange = (e, index) => {
     const value = e.target.value;
 

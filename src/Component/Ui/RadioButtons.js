@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export default function RadioButtons({ checkedValue, onChange, options }) {
+export default function RadioButtons({ checkedValue, onHandleChange, options }) {
   return (
     <>
       <div className="flex gap-6">
@@ -19,7 +19,7 @@ export default function RadioButtons({ checkedValue, onChange, options }) {
                 id={option.label}
                 value={option.value}
                 checked={checkedValue === option.value} 
-                onChange={onChange}
+                onChange={onHandleChange}
               />
               <span className="absolute bg-orange-600 w-3 h-3 rounded-full opacity-0 peer-checked:opacity-100 transition-opacity duration-200 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></span>
 

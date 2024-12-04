@@ -38,94 +38,73 @@ function AddQuestion() {
   );
   const subject = useSelector((state) => state.userConfig?.CurrentSubject?._id);
 
+  const [questionType, setQuestionType] = useState("normal");
   const [isLoading, setIsLoading] = useState(true);
   const [networkError, setNetworkError] = useState("");
   const [type, setType] = useState("concept");
-  const [questionType, setQuestionType] = useState("normal");
   const [subtopics, setSubtopics] = useState([]);
   const [subjectname, setSubjectname] = useState([]);
   const [selectedSubtopic, setSelectedSubtopic] = useState([]);
   const [selectedSubject, setSelectedSubject] = useState([]);
-  const [addQuestion, setAddQuestion] = useState(() => {
-    if (questionType === "normal") {
-      return {
-        subjectId: subject,
-        classesId: classId,
-        subtopicIds: [],
-        type: type,
-        questionType: questionType,
-        englishQuestion: {
-          question: "",
-          answer: "",
-          solution: "",
-          options: { A: "", B: "", C: "", D: "" },
-          statementQuestion: [],
-          pairQuestion: [],
-        },
-        hindiQuestion: {
-          question: "",
-          answer: "",
-          solution: "",
-          options: { A: "", B: "", C: "", D: "" },
-          statementQuestion: [],
-          pairQuestion: [],
-        },
-      };
+  const getInitialEditQuestionState = (TypeofQuestion) => {
+    const commonFields = {
+      subjectId: subject,
+      classesId: classId,
+      subtopicIds: [],
+      type: type,
+      questionType: "normal",
+      englishQuestion: {
+        question: "",
+        options: { A: "", B: "", C: "", D: "" },
+        answer: "",
+        solution: "",
+        statementQuestion: [],
+        pairQuestion: [],
+      },
+      hindiQuestion: {
+        question: "",
+        options: { A: "", B: "", C: "", D: "" },
+        answer: "",
+        solution: "",
+        statementQuestion: [],
+        pairQuestion: [],
+      },
+    };
+
+    if (TypeofQuestion === "normal") {
+      return commonFields;
     } else {
       return {
-        subjectId: subject,
-        classesId: classId,
-        subtopicIds: [],
-        type: type,
-        questionType: questionType,
+        ...commonFields,
         englishQuestion: {
-          question: "",
-          answer: "",
-          solution: "",
-          options: { A: "", B: "", C: "", D: "" },
-          statementQuestion: [],
-          pairQuestion: [],
+          ...commonFields.englishQuestion,
           lastQuestion: "",
         },
         hindiQuestion: {
-          question: "",
-          answer: "",
-          solution: "",
-          options: { A: "", B: "", C: "", D: "" },
-          statementQuestion: [],
-          pairQuestion: [],
+          ...commonFields.hindiQuestion,
           lastQuestion: "",
         },
       };
     }
-  });
+  };
+
+  const [addQuestion, setAddQuestion] = useState(
+    getInitialEditQuestionState(questionType)
+  );
+
+  const debounceTimeoutRef = useRef(null);
 
   const [options, setOptions] = useState({
     AnswerOption: { A: false, B: false, C: false, D: false },
   });
 
-  const optionsArray = Object.keys(options.AnswerOption).map((key) => ({
-    label: `Option ${key}`,
-    value: key,
-    checked: options.AnswerOption[key],
-  }));
-
-  const handleCheck = (language, event) => {
+  const handleCheck = (event) => {
     const selectedValue = event.target.value;
-
-    // Update the options for the selected language
     setOptions((prev) => {
       const newOptions = { ...prev };
-
-      // If the language option doesn't exist, initialize it
-      if (!newOptions[language]) {
-        newOptions[language] = { A: false, B: false, C: false, D: false };
-      }
-
-      Object.keys(newOptions[language]).forEach((key) => {
-        newOptions[language][key] = key === selectedValue;
+      Object.keys(newOptions.AnswerOption).forEach((key) => {
+        newOptions.AnswerOption[key] = key === selectedValue;
       });
-
       return newOptions;
     });
 
@@ -143,60 +122,31 @@ function AddQuestion() {
   };
 
   const radioOptions = [
-    { value: "concept", label: "Concept" },
-    { value: "aptitude", label: "Aptitude" },
-    { value: "random", label: "Random" },
+    { label: "concept", value: "concept" },
+    { label: "aptitude", value: "aptitude" },
+    { label: "random", value: "random" },
   ];
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    const [lang, field, option] = name.split("."); // Split the name to get the language, field, and option
-
-    if (lang === "englishQuestion" || lang === "hindiQuestion") {
-      if (field === "options" && option) {
-        setAddQuestion((prev) => ({
-          ...prev,
-          [lang]: {
-            ...prev[lang],
-            options: {
-              ...prev[lang].options,
-              [option]: value,
-            },
-          },
-        }));
-      } else {
-        setAddQuestion((prev) => ({
-          ...prev,
-          [lang]: {
-            ...prev[lang],
-            [field]: value, // Update the field (solution in this case)
-          },
-        }));
-      }
-    } else {
-      setAddQuestion((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
-  };
-
   const handleTypeChange = (event) => {
-    setType(event.target.value);
-    setAddQuestion((prev) => ({ ...prev, type: event.target.value }));
+    const newType = event.target.value;
+    setType(newType);
+    setAddQuestion((prev) => ({
+      ...prev,
+      type: newType,
+    }));
   };
 
   const handleSubjectChange = (event) => {
-    const { value } = event.target;
-    console.log(value);
-
-    setSelectedSubject(value);
-    setAddQuestion((prev) => ({ ...prev, subjectId: value._id }));
+    const selectedOptionId = event.target.value;
+    const selectedOption = subjectname.find(
+      (subject) => subject._id === selectedOptionId
+    );
+    setAddQuestion((prev) => ({ ...prev, subjectId: selectedOptionId }));
+    setSelectedSubject(selectedOption || "");
   };
 
   const handleSubtopicChange = (event) => {
     const { value } = event.target;
-
     const uniqueValues = Array.from(new Set(value.map((item) => item._id)));
     setSelectedSubtopic(value);
     setAddQuestion((prev) => ({
@@ -205,21 +155,35 @@ function AddQuestion() {
     }));
   };
 
-  const [currentEngStatement, setCurrentEngStatement] = useState("");
-  const [currentHindiStatement, setCurrentHindiStatement] = useState("");
-  const [currentEngPair, setCurrentEngPair] = useState("");
-  const [currentHindiPair, setCurrentHindiPair] = useState("");
-
   const addStatementQuestion = (value, language) => {
-    console.log(value);
-
-    // Check if rowData exists
     if (!value?.rowData) {
       console.log("No row data available");
       return;
     }
+    console.log(value.rowData);
 
     const { statement, id } = value.rowData;
+
+    // Handle delete action
+    if (value.type === "delete") {
+      setAddQuestion((prev) => {
+        const updatedStatements = prev[language].statementQuestion.filter(
+          (item) => item.id !== id // Filter out the item with the matching id
+        );
+        console.log("Updated statements after delete:", updatedStatements);
+
+        return {
+          ...prev,
+          [language]: {
+            ...prev[language],
+            statementQuestion: updatedStatements, // Update the statementQuestion array without the deleted item
+          },
+        };
+      });
+
+      console.log(`Deleted statement with id: ${id} from ${language}`);
+      return; // Exit the function after deleting the statement
+    }
 
     // Validate the statement
     if (typeof statement !== "string") {
@@ -240,10 +204,12 @@ function AddQuestion() {
     // Update based on language
     if (language === "englishQuestion") {
       setAddQuestion((prev) => {
+        // Check if the statement with the given id exists and update it, otherwise add the new one
         const updatedStatements = prev.englishQuestion.statementQuestion.map(
-          (item) => (item.id === id ? { ...item, finalCombined } : item)
+          (item) => (item.id === id ? { ...item, ...finalCombined } : item)
         );
 
+        // If the statement doesn't exist, push it
         if (!updatedStatements.some((item) => item.id === id)) {
           updatedStatements.push(finalCombined);
         }
@@ -258,16 +224,17 @@ function AddQuestion() {
       });
     } else if (language === "hindiQuestion") {
       setAddQuestion((prev) => {
+        // Check if the statement with the given id exists and update it, otherwise add the new one
         const updatedStatements = prev.hindiQuestion.statementQuestion.map(
-          (item) => (item.id === id ? { ...item, finalCombined } : item)
+          (item) => (item.id === id ? { ...item, ...finalCombined } : item)
         );
 
-        // Only push the statement if the id does not already exist in the array
+        // If the statement doesn't exist, push it
         if (!updatedStatements.some((item) => item.id === id)) {
-          updatedStatements.push(finalCombined); // Add the statement object
+          updatedStatements.push(finalCombined);
         }
 
-        console.log(updatedStatements);
+        console.log("Updated statements:", updatedStatements);
 
         return {
           ...prev,
@@ -277,6 +244,37 @@ function AddQuestion() {
           },
         };
       });
+    }
+  };
+
+  const handleStatementQuestionChange = (event) => {
+    const { name, value } = event.target;
+    const [lang, field, option] = name.split(".");
+    const currentQuestionType = addQuestion.questionType;
+
+    if (currentQuestionType === "pair") {
+      const updatedPairQuestions = [value];
+
+      setAddQuestion((prev) => ({
+        ...prev,
+        [lang]: {
+          ...prev[lang],
+          [field]: updatedPairQuestions,
+          lastQuestion: value,
+        },
+      }));
+    } else if (currentQuestionType === "statement") {
+      // Logic for handling normal statement questions
+      const updatedStatements = [...addQuestion[lang].statements, value];
+
+      setAddQuestion((prev) => ({
+        ...prev,
+        [lang]: {
+          ...prev[lang],
+          [field]: updatedStatements,
+          lastQuestion: value,
+        },
+      }));
     }
   };
 
@@ -293,8 +291,6 @@ function AddQuestion() {
         pairQuestion: updatedPairQuestion,
       },
     });
-    setCurrentEngPair("");
-    setCurrentHindiPair("");
   };
 
   const [inputs, setInputs] = useState({
@@ -308,71 +304,15 @@ function AddQuestion() {
     },
   });
 
-  const handleInputChange = (value, language) => {
-    const newPair = { ...value.rowData };
-    console.log(newPair);
-    const combinedPair = `${newPair.question} - ${newPair.answer}`;
-
-    console.log(combinedPair);
-
-    if (language === "englishQuestion") {
-      setAddQuestion((prev) => ({
-        ...prev,
-        englishQuestion: {
-          ...prev.englishQuestion,
-          pairQuestion: [...prev.englishQuestion.pairQuestion, ...combinedPair], // Add the combined pair to the array
-        },
-      }));
-    } else {
-      setAddQuestion((prev) => ({
-        ...prev,
-        hindiQuestion: {
-          ...prev.hindiQuestion,
-          pairQuestion: [...prev.hindiQuestion.pairQuestion, ...combinedPair], // Add the combined pair to the array
-        },
-      }));
-    }
-  };
-
-  const handleEditField = (index, language, field) => {
-    setAddQuestion((prev) => {
-      const updatedPairs = [...prev[language].pairQuestion];
-      updatedPairs[index] = {
-        ...updatedPairs[index],
-        editing: { ...updatedPairs[index].editing, [field]: true },
-      };
-      return {
-        ...prev,
-        [language]: { ...prev[language], pairQuestion: updatedPairs },
-      };
-    });
-  };
-
-  const handleSaveEdit = (index, field, language, value) => {
-    setAddQuestion((prev) => {
-      const updatedPairs = [...prev[language].pairQuestion];
-      updatedPairs[index] = {
-        ...updatedPairs[index],
-        [field]: value,
-        editing: { ...updatedPairs[index].editing, [field]: false },
-      };
-      return {
-        ...prev,
-        [language]: { ...prev[language], pairQuestion: updatedPairs },
-      };
-    });
-  };
-
-  const handleDeletePair = (index, language) => {
-    setAddQuestion((prev) => {
-      const updatedPairs = prev[language].pairQuestion.filter(
-        (_, i) => i !== index
-      );
-      return {
-        ...prev,
-        [language]: { ...prev[language], pairQuestion: updatedPairs },
-      };
-    });
+  const handleInputChange = (language, e) => {
+    const { name, value } = e.target;
+    setInputs((prevInputs) => ({
+      ...prevInputs,
+      [language]: {
+        ...prevInputs[language],
+        [name]: value,
+      },
+    }));
   };
 
   const handleAddPair = (value, language) => {
@@ -380,76 +320,108 @@ function AddQuestion() {
 
     if (!value?.rowData) {
       console.log("No row data available");
-      return; // Exit early if rowData is undefined
+      return;
     }
 
     const { pairA, pairB, id } = value.rowData;
 
-    // Ensure that both pairA and pairB are valid strings
+    // Handle delete action
+    if (value.type === "delete") {
+      setAddQuestion((prev) => {
+        // Remove the pair question with the matching id
+        const updatedPair = prev[language].pairQuestion.filter(
+          (item) => item.id !== id
+        );
+
+        return {
+          ...prev,
+          [language]: {
+            ...prev[language],
+            pairQuestion: updatedPair,
+          },
+        };
+      });
+      console.log(`Deleted pair with id: ${id}`);
+      return; // Exit early after handling the delete
+    }
+
+    // Validate pair data
     if (typeof pairA !== "string" || typeof pairB !== "string") {
       console.log("Invalid input data: pairA or pairB is not a string");
-      return; // Exit the function early if data is invalid
+      return;
     }
 
     if (!pairA || !pairB) {
-      console.log("Invalid pair: Missing pairA or pairB");
-      return; // Exit the function early if either pairA or pairB is missing
+      toast.warn("Invalid pair: Missing pairA or pairB");
+      return;
     }
 
+    // Combine pairA and pairB into a single string
     const combinedPair = `${pairA} --- ${pairB}`;
 
+    // Prepare the final object with id and combined pair data
     const finalCombined = {
+      id: id,
       combined: combinedPair,
     };
 
-    console.log("Final Combined Object:", finalCombined);
+    // Update the pair question data in the state
+    setAddQuestion((prev) => {
+      // Update or add the pair question based on the id
+      const updatedPairQuestion = prev[language].pairQuestion.map((pair) =>
+        pair.id === id ? { ...pair, ...finalCombined } : pair
+      );
 
-    if (language === "englishQuestion") {
-      setAddQuestion((prev) => {
-        const updatedPairQuestion = prev.englishQuestion.pairQuestion.map(
-          (pair) => (pair.id === id ? { ...pair, ...finalCombined } : pair)
-        );
+      // If the pair doesn't exist in the array, push it as a new pair
+      if (!updatedPairQuestion.some((pair) => pair.id === id)) {
+        updatedPairQuestion.push(finalCombined);
+      }
 
-        if (!updatedPairQuestion.some((pair) => pair.id === id)) {
-          updatedPairQuestion.push(finalCombined);
-        }
+      // Return the updated state
+      return {
+        ...prev,
+        [language]: {
+          ...prev[language],
+          pairQuestion: updatedPairQuestion,
+        },
+      };
+    });
 
-        return {
-          ...prev,
-          englishQuestion: {
-            ...prev.englishQuestion,
-            pairQuestion: updatedPairQuestion,
-          },
-        };
-      });
-    } else if (language === "hindiQuestion") {
-      setAddQuestion((prev) => {
-        const updatedPairQuestion = prev.hindiQuestion.pairQuestion.map(
-          (pair) => (pair.id === id ? { ...pair, ...finalCombined } : pair)
-        );
-
-        if (!updatedPairQuestion.some((pair) => pair.id === id)) {
-          updatedPairQuestion.push(finalCombined);
-        }
-
-        console.log(updatedPairQuestion);
-
-        return {
-          ...prev,
-          hindiQuestion: {
-            ...prev.hindiQuestion,
-            pairQuestion: updatedPairQuestion,
-          },
-        };
-      });
-    }
+    console.log(`Updated pair with id: ${id}, Combined pair: ${combinedPair}`);
   };
 
-  // useEffect(() => {
-  //   console.log("ADD_QUESTION", addQuestion);
-  // }, [addQuestion]);
+  const handleChange = (event) => {
+    const { name, value } = event.target;
 
-  const debounceTimeoutRef = useRef(null);
+    const [lang, field, option] = name.split(".");
+    if (lang === "englishQuestion" || lang === "hindiQuestion") {
+      if (field === "options" && option) {
+        setAddQuestion((prev) => ({
+          ...prev,
+          [lang]: {
+            ...prev[lang],
+            options: {
+              ...prev[lang].options,
+              [option]: value,
+            },
+          },
+        }));
+      } else {
+        setAddQuestion((prev) => ({
+          ...prev,
+          [lang]: {
+            ...prev[lang],
+            [field]: value,
+          },
+        }));
+      }
+    } else {
+      setAddQuestion((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
 
   const handleGetData = useCallback(async () => {
     setIsLoading(true);
@@ -474,7 +446,7 @@ function AddQuestion() {
       }
 
       setSubjectname(subjects);
-      setSelectedSubject(subjects[0] || []);
+      setSelectedSubject("");
       setSubtopics(subTopic);
     } catch (error) {
       if (error.name === "AbortError") {
@@ -486,29 +458,15 @@ function AddQuestion() {
     } finally {
       setIsLoading(false);
     }
-
-    return () => {
-      controller.abort(); // Cleanup function to abort the fetch
-    };
   }, [accessToken, subject]);
-  const debounceGetData = useCallback(() => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
 
-    debounceTimeoutRef.current = setTimeout(() => {
-      handleGetData();
-    }, 500);
-  }, [handleGetData]);
   useEffect(() => {
-    debounceGetData();
+    handleGetData();
+  }, [handleGetData]);
 
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-    };
-  }, [debounceGetData, subject]);
+  useEffect(() => {
+    console.log("Add_question", addQuestion);
+  }, [addQuestion]);
 
   const isEmpty = () => {
     const { englishQuestion, hindiQuestion } = addQuestion;
@@ -592,10 +550,9 @@ function AddQuestion() {
                       </label>
                       <SingleSelect
                         label="Subject"
-                        value={selectedSubject}
-                        onChange={handleSubjectChange}
                         options={subjectname}
-                        className="w-full"
+                        selectedValue={selectedSubject}
+                        onSubjectChange={handleSubjectChange}
                       />
                     </div>
 
@@ -621,8 +578,7 @@ function AddQuestion() {
                         <RadioButtons
                           options={radioOptions}
                           checkedValue={type}
-                          onChange={handleTypeChange}
-                          className="w-full"
+                          onHandleChange={handleTypeChange}
                         />
                       </div>
                     </div>
@@ -639,9 +595,9 @@ function AddQuestion() {
                       >
                         <input
                           type="radio"
-                          id={`type ${option}`}
+                          id={`type-${option}`}
                           value={option}
-                          name={option}
+                          name="questionType"
                           checked={questionType === option}
                           onChange={(e) => {
                             setAddQuestion((prev) => ({
@@ -653,7 +609,7 @@ function AddQuestion() {
                           className="w-4 h-4 text-orange-600 bg-orange-600 border-orange-600 dark:bg-gray-600 dark:border-gray-500"
                         />
                         <label
-                          htmlFor={`type ${option}`}
+                          htmlFor={`type-${option}`}
                           className="w-full py-3 text-sm font-medium capitalize text-gray-900 dark:text-gray-300"
                         >
                           {option}
@@ -666,29 +622,25 @@ function AddQuestion() {
                     <EnglishQuestionPairForm
                       addQuestion={addQuestion}
                       setAddQuestion={setAddQuestion}
-                      currentEngPair={currentEngPair}
-                      setCurrentEngPair={setCurrentEngPair}
-                      handleAddPair={handleAddPair}
-                      handleSaveEdit={handleSaveEdit}
-                      handleEditField={handleEditField}
-                      handleDeletePair={handleDeletePair}
                       handleChange={handleChange}
                       handleCheck={handleCheck}
-                      optionsArray={optionsArray}
                       handlePairQuestionChange={handlePairQuestionChange}
-                      inputs={inputs}
+                      handleAddPair={handleAddPair}
+                      inputs={inputs.english}
                       handleInputChange={handleInputChange}
+                      options={options}
                     />
                   ) : questionType === "statement" ? (
                     <EnglishQueStatementBaseform
                       addQuestion={addQuestion}
                       setAddQuestion={setAddQuestion}
-                      currentStatement={currentEngStatement}
-                      setCurrentStatement={setCurrentEngStatement}
                       handleChange={handleChange}
                       handleCheck={handleCheck}
-                      optionsArray={optionsArray}
+                      options={options}
                       handleAddStatement={addStatementQuestion}
+                      handleStatementQuestionChange={
+                        handleStatementQuestionChange
+                      }
                     />
                   ) : (
                     <NormalquestionBaseForm
@@ -696,7 +648,7 @@ function AddQuestion() {
                       setAddQuestion={setAddQuestion}
                       handleChange={handleChange}
                       handleCheck={handleCheck}
-                      optionsArray={optionsArray}
+                      options={options}
                     />
                   )}
 
@@ -704,27 +656,25 @@ function AddQuestion() {
                     <HindiQuestionPairForm
                       addQuestion={addQuestion}
                       setAddQuestion={setAddQuestion}
-                      currentHindiPair={currentHindiPair}
-                      handleAddPair={handleAddPair}
-                      handleSaveEdit={handleSaveEdit}
-                      handleEditField={handleEditField}
-                      handleDeletePair={handleDeletePair}
+                      addPairQuestion={handleAddPair}
                       handleChange={handleChange}
                       handleCheck={handleCheck}
-                      optionsArray={optionsArray}
+                      options={options}
                       handlePairQuestionChange={handlePairQuestionChange}
-                      inputs={inputs}
+                      handleStatementQuestionChange={
+                        handleStatementQuestionChange
+                      }
+                      handleAddPair={handleAddPair}
+                      inputs={inputs.hindi} // Pass inputs as prop
                       handleInputChange={handleInputChange}
                     />
                   ) : questionType === "statement" ? (
                     <HindiQueStatementBaseform
                       addQuestion={addQuestion}
                       setAddQuestion={setAddQuestion}
-                      currentStatement={currentHindiStatement}
-                      setCurrentStatement={setCurrentHindiStatement}
                       handleChange={handleChange}
                       handleCheck={handleCheck}
-                      optionsArray={optionsArray}
+                      options={options}
                       handleAddStatement={addStatementQuestion}
                     />
                   ) : (
@@ -733,7 +683,7 @@ function AddQuestion() {
                       setAddQuestion={setAddQuestion}
                       handleChange={handleChange}
                       handleCheck={handleCheck}
-                      optionsArray={optionsArray}
+                      options={options}
                     />
                   )}
 

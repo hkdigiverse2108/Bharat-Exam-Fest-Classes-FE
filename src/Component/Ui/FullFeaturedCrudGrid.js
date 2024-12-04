@@ -47,7 +47,7 @@ function EditToolbar(props) {
 
 export default function FullFeaturedCrudGrid({
   pairQuestion,
-  handleChange,
+  onHandleChange,
   language,
   questionType,
 }) {
@@ -91,7 +91,16 @@ export default function FullFeaturedCrudGrid({
   };
 
   const handleDeleteClick = (id) => () => {
-    setRows(rows.filter((row) => row.id !== id)); // Delete the row
+    // Remove the row from the state
+    const deletedRow = rows.find((row) => row.id === id);
+
+    // Remove the row from the rows state
+    const updatedRows = rows.filter((row) => row.id !== id);
+    setRows(updatedRows);
+
+    if (onHandleChange) {
+      onHandleChange({ type: "delete", rowData: deletedRow }, language);
+    }
   };
 
   const handleCancelClick = (id) => () => {
@@ -110,8 +119,8 @@ export default function FullFeaturedCrudGrid({
     const updatedRow = { ...newRow, isNew: false };
     setRows(rows.map((row) => (row.id === newRow.id ? updatedRow : row)));
 
-    if (handleChange) {
-      handleChange({ type: "update", rowData: newRow }, language); // Call the handleChange function
+    if (onHandleChange) {
+      onHandleChange({ type: "update", rowData: newRow }, language); // Call the onHandleChange function
     }
 
     return updatedRow;

@@ -14,7 +14,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import FilterSide from "../Filterpage/FilterSide";
-import MultiSelection from "../Ui/MultiSelection";
 import { useDispatch, useSelector } from "react-redux";
 import { CurrentQuestion, QuestionList } from "../../Context/Action";
 import FilterQuestion from "../Ui/FilterQuestion";
@@ -399,7 +398,7 @@ function SubjectDetails() {
                           ? question.subtopicIds &&
                             question.subtopicIds.length > 0 &&
                             question.subtopicIds.includes(subTopicName)
-                          : true // Return all questions when subTopicName is null or undefined
+                          : true
                     )
                     .map((value, index) => (
                       <li key={index} className="space-y-2">

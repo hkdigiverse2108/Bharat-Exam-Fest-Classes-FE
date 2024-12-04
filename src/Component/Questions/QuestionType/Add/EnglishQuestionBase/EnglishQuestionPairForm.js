@@ -9,7 +9,7 @@ const EnglishQuestionPairForm = ({
   currentStatement,
   handleChange,
   handleCheck,
-  optionsArray,
+  options,
   handleStatementQuestionChange,
   handleAddPair,
   handleInputChange,
@@ -37,7 +37,6 @@ const EnglishQuestionPairForm = ({
           type="text"
           placeholder="Enter question"
           name="englishQuestion.question"
-          value={addQuestion.englishQuestion.question}
           onChange={handleChange}
         />
 
@@ -47,8 +46,8 @@ const EnglishQuestionPairForm = ({
           <FullFeaturedCrudGrid
             pairQuestion={addQuestion.englishQuestion.pairQuestion}
             language={"englishQuestion"}
-            handleChange={handleAddPair}
             questionType={"pair"}
+            onHandleChange={handleAddPair}
           />
         </div>
         <input
@@ -56,8 +55,7 @@ const EnglishQuestionPairForm = ({
           id="username"
           type="text"
           placeholder="Enter statement"
-          value={addQuestion.englishQuestion.lastQuestion || ""}
-          onChange={handleStatementQuestionChange}
+          onChange={handleChange}
           name="englishQuestion.lastQuestion"
         />
 
@@ -96,25 +94,23 @@ const EnglishQuestionPairForm = ({
           </p>
           <div className="md:flex sm:flex text-sm font-medium text-gray-900 space-x-6 text-start dark:text-white">
             <ul className="flex items-center justify-start gap-x-6 w-full text-sm font-medium text-gray-900">
-              {optionsArray.map((option) => (
-                <li key={option.value}>
+              {Object.keys(options.AnswerOption).map((key) => (
+                <li key={key}>
                   <div className="flex items-center ps-3">
                     <input
-                      id={`radio${option.value}`}
+                      id={`radio${key}`}
                       type="radio"
-                      name="englishQuestion.answer" // Use the appropriate name for your state structure
-                      value={option.value}
-                      checked={
-                        addQuestion.englishQuestion.answer === option.value
-                      } // Ensure the correct radio button is checked
-                      onChange={(e) => handleCheck("englishQuestion", e)} // Call handleCheck for englishQuestion selection
+                      name="englishQuestion.answer" 
+                      value={key} 
+                      checked={addQuestion.englishQuestion.answer === key}
+                      onChange={(e) => handleCheck(e)} 
                       className="w-4 h-4 text-blue-600 border-gray-300 checked:bg-blue-600 checked:outline-none"
                     />
                     <label
-                      htmlFor={`radio${option.value}`}
+                      htmlFor={`radio${key}`}
                       className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
                     >
-                      {option.label}
+                      Option {key}
                     </label>
                   </div>
                 </li>

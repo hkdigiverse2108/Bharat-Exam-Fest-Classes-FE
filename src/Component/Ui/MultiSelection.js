@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
@@ -16,11 +16,13 @@ const MenuProps = {
 };
 
 export default function MultipleSelect({ label, value, onChange, options }) {
-  
+  useEffect(() => {
+    console.log(options);
+  }, []);
   return (
     <>
       <FormControl className="container h-full">
-        <InputLabel id={`${label}-label`} size="small">
+        <InputLabel id="subtopic-label" size="small">
           {label}
         </InputLabel>
         <Select
@@ -30,11 +32,10 @@ export default function MultipleSelect({ label, value, onChange, options }) {
           onChange={onChange}
           renderValue={(selected) => selected.map((s) => s.name).join(", ")}
           size="small"
-          MenuProps={MenuProps}
         >
-          {options.map((subtopic) => (
-            <MenuItem key={subtopic._id} value={subtopic}>
-              {subtopic.name}
+          {options.map((option) => (
+            <MenuItem key={option._id} value={option}>
+              {option.name}
             </MenuItem>
           ))}
         </Select>

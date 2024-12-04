@@ -6,14 +6,11 @@ import FullFeaturedCrudGrid from "../../../../Ui/FullFeaturedCrudGrid";
 
 const EnglishQuestionPairForm = ({
   editQuestion,
-  currentStatement,
   handleChange,
   handleCheck,
-  optionsArray,
+  options,
   handleStatementQuestionChange,
   handleAddPair,
-  handleInputChange,
-  inputs,
 }) => {
   return (
     <div className="space-y-4 duration-300 ease-in-out">
@@ -36,12 +33,11 @@ const EnglishQuestionPairForm = ({
         />
       </div>
       {/* Pair Questions */}
-
       <div className="space-y-2">
         <FullFeaturedCrudGrid
           pairQuestion={editQuestion.englishQuestion.pairQuestion}
           language={"englishQuestion"}
-          handleChange={handleAddPair}
+          onHandleChange={handleAddPair}
           questionType={"pair"}
         />
       </div>
@@ -55,8 +51,8 @@ const EnglishQuestionPairForm = ({
           id="statement"
           type="text"
           placeholder="Enter statement"
-          value={editQuestion.englishQuestion.lastQuestion}
-          onChange={handleStatementQuestionChange}
+          value={editQuestion.englishQuestion.lastQuestion || ""}
+          onChange={handleChange}
           name="englishQuestion.lastQuestion"
         />
       </div>
@@ -78,8 +74,8 @@ const EnglishQuestionPairForm = ({
               <textarea
                 rows="3"
                 name={`englishQuestion.options.${option}`}
-                value={editQuestion.englishQuestion.options[option] || ""}
-                onChange={handleChange}
+                value={editQuestion.englishQuestion.options[option] || ""} 
+                onChange={handleChange} 
                 className="block w-full min-h-22 max-h-22 p-2 border rounded-lg bg-white placeholder-gray-400 text-gray-600 border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 focus:outline-none"
                 placeholder={`Option ${option}`}
               />
@@ -94,25 +90,23 @@ const EnglishQuestionPairForm = ({
         </p>
         <div className="md:flex sm:flex text-sm font-medium text-gray-900 space-x-6 text-start dark:text-white">
           <ul className="flex items-center justify-start gap-x-6 w-full text-sm font-medium text-gray-900">
-            {optionsArray.map((option) => (
-              <li key={option.value}>
+            {Object.keys(options.AnswerOption).map((key) => (
+              <li key={key}>
                 <div className="flex items-center ps-3">
                   <input
-                    id={`radio${option.value}`}
+                    id={`radio${key}`}
                     type="radio"
-                    name="englishQuestion.answer" // Use the appropriate name for your state structure
-                    value={option.value}
-                    checked={
-                      editQuestion.englishQuestion.answer === option.value
-                    } // Ensure the correct radio button is checked
-                    onChange={(e) => handleCheck("englishQuestion", e)} // Call handleCheck for englishQuestion selection
+                    name="englishQuestion.answer"
+                    value={key}
+                    checked={editQuestion.englishQuestion.answer === key}
+                    onChange={(e) => handleCheck( e)} 
                     className="w-4 h-4 text-blue-600 border-gray-300 checked:bg-blue-600 checked:outline-none"
                   />
                   <label
-                    htmlFor={`radio${option.value}`}
+                    htmlFor={`radio${key}`}
                     className="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"
                   >
-                    {option.label}
+                    Option {key}
                   </label>
                 </div>
               </li>
@@ -126,11 +120,11 @@ const EnglishQuestionPairForm = ({
           Solution
         </p>
         <textarea
-          name="englishQuestion.solution" // Use a name that the handleChange function can understand
+          name="englishQuestion.solution"
           className="border-2 pl-2 text-md border-gray-400 hover:border-gray-400 transition-colors rounded-md w-full min-h-[100px] py-2 px-3 text-gray-800 leading-tight focus:outline-none focus:ring-purple-600 focus:border-purple-600 focus:shadow-outline"
           placeholder="Enter solution"
-          value={editQuestion.englishQuestion.solution} // Bind the value to the state
-          onChange={handleChange} // Use handleChange for updating the value
+          value={editQuestion.englishQuestion.solution}
+          onChange={handleChange} 
         />
       </div>
     </div>
