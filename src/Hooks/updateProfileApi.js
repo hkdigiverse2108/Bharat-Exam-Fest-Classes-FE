@@ -1,4 +1,3 @@
-import moment from "moment-timezone";
 import axios from "axios";
 import { convertIscToUtc } from "../Utils/timeUtils";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
