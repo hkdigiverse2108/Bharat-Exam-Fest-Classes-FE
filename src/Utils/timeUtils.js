@@ -1,16 +1,15 @@
 
 
-export const convertUtcToIst = (utcDate) => {
-  const utcTime = new Date(utcDate); // Convert UTC string to Date object
-  const indiaTime = new Date(utcTime.getTime() + 5.5 * 60 * 60 * 1000); // Convert UTC to IST (adding 5 hours 30 minutes)
-
-  return indiaTime.toISOString(); // Return ISO formatted date in IST
+export const convertUtcToIsc = (utcDate) => {
+  const utc = new Date(utcDate); 
+  const offset = 5.5 * 60 * 60 * 1000; 
+  const istDate = new Date(utc.getTime() + offset); 
+  return istDate.toISOString();
 };
 
-
-export const convertIscToUtc = (iscDate) => {
-  const indiaTime = new Date(iscDate); // Convert ISC string to Date object
-  const utcTime = new Date(indiaTime.getTime() - 5.5 * 60 * 60 * 1000); // Subtract 5 hours 30 minutes to convert ISC to UTC
-
-  return utcTime.toISOString(); // Return ISO formatted date in UTC
+export const convertIscToUtc = (istDate) => {
+  const ist = new Date(istDate);
+  const offset = 5.5 * 60 * 60 * 1000; 
+  const utcDate = new Date(ist.getTime() - offset);
+  return utcDate.toISOString(); 
 };
