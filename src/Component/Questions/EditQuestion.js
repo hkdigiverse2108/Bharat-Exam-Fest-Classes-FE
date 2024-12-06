@@ -1142,10 +1142,10 @@ function EditQuestion() {
       } else {
         const {
           _id,
-          updated_at,
+          updatedAt,
           updatedBy,
           updatedAt,
-          created_at,
+          createdAt,
           isBlocked,
           isDeleted,
           createdBy,

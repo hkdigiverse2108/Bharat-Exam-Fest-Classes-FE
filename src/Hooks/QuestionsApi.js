@@ -38,11 +38,11 @@ export const fetchQuestionsBySubject = async (
     // Apply convertUtcToIst to relevant date fields in Questions
     const convertedQuestions = Questions.map((question) => ({
       ...question,
-      created_at: question.created_at
-        ? convertUtcToIst(question.created_at)
+      createdAt: question.createdAt
+        ? convertUtcToIst(question.createdAt)
         : null,
-      updated_at: question.updated_at
-        ? convertUtcToIst(question.updated_at)
+      updatedAt: question.updatedAt
+        ? convertUtcToIst(question.updatedAt)
         : null,
       start_date: question.start_date
         ? convertUtcToIst(question.start_date)
@@ -60,11 +60,11 @@ export const fetchQuestionsBySubject = async (
     // Apply convertUtcToIst to relevant date fields in Sub-Topics if needed
     const convertedSubTopics = subTopics.map((subTopic) => ({
       ...subTopic,
-      created_at: subTopic.created_at
-        ? convertUtcToIst(subTopic.created_at)
+      createdAt: subTopic.createdAt
+        ? convertUtcToIst(subTopic.createdAt)
         : null,
-      updated_at: subTopic.updated_at
-        ? convertUtcToIst(subTopic.updated_at)
+      updatedAt: subTopic.updatedAt
+        ? convertUtcToIst(subTopic.updatedAt)
         : null,
       // Add other date fields if necessary
     }));
@@ -105,11 +105,11 @@ export const getQuestionData = async (token, questionId, signal) => {
 
       // Convert date fields from UTC to IST if they exist
       if (questionData) {
-        questionData.created_at = questionData.created_at
-          ? convertUtcToIst(questionData.created_at)
+        questionData.createdAt = questionData.createdAt
+          ? convertUtcToIst(questionData.createdAt)
           : null;
-        questionData.updated_at = questionData.updated_at
-          ? convertUtcToIst(questionData.updated_at)
+        questionData.updatedAt = questionData.updatedAt
+          ? convertUtcToIst(questionData.updatedAt)
           : null;
         questionData.start_date = questionData.start_date
           ? convertUtcToIst(questionData.start_date)
@@ -171,11 +171,11 @@ export const deleteExistQuestion = async (token, itemToDelete, signal) => {
 export const addNewQuestion = async (addQuestion, token) => {
   try {
     // Convert the date fields in addQuestion object from IST to UTC
-    if (addQuestion.created_at) {
-      addQuestion.created_at = convertIscToUtc(addQuestion.created_at);
+    if (addQuestion.createdAt) {
+      addQuestion.createdAt = convertIscToUtc(addQuestion.createdAt);
     }
-    if (addQuestion.updated_at) {
-      addQuestion.updated_at = convertIscToUtc(addQuestion.updated_at);
+    if (addQuestion.updatedAt) {
+      addQuestion.updatedAt = convertIscToUtc(addQuestion.updatedAt);
     }
     if (addQuestion.start_date) {
       addQuestion.start_date = convertIscToUtc(addQuestion.start_date);
@@ -221,11 +221,11 @@ export const addNewQuestion = async (addQuestion, token) => {
 export const editQuestionAPI = async (editQuestion, token) => {
   try {
     // Convert the date fields in editQuestion object from IST to UTC
-    if (editQuestion.created_at) {
-      editQuestion.created_at = convertIscToUtc(editQuestion.created_at);
+    if (editQuestion.createdAt) {
+      editQuestion.createdAt = convertIscToUtc(editQuestion.createdAt);
     }
-    if (editQuestion.updated_at) {
-      editQuestion.updated_at = convertIscToUtc(editQuestion.updated_at);
+    if (editQuestion.updatedAt) {
+      editQuestion.updatedAt = convertIscToUtc(editQuestion.updatedAt);
     }
     if (editQuestion.start_date) {
       editQuestion.start_date = convertIscToUtc(editQuestion.start_date);

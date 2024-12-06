@@ -33,7 +33,7 @@ export const imgUpload = async (file, token) => {
 
     if (response.data) {
       // Convert relevant date fields from ISC to UTC
-      const fieldsToConvert = ['created_at', 'updated_at', 'start_date', 'end_date', 'date'];
+      const fieldsToConvert = ['createdAt', 'updatedAt', 'start_date', 'end_date', 'date'];
 
       fieldsToConvert.forEach(field => {
         if (response.data[field]) {
