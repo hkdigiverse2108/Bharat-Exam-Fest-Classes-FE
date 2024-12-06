@@ -16,14 +16,7 @@ const Header = () => {
     <>
       <header className="sticky top-0 z-999 h-20 flex w-full bg-white shadow-2  drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none">
         <div className="flex flex-grow items-center gap-x-10 px-4 py-4  md:px-6 2xl:px-11">
-          {/* Logo Section */}
-          <div className="flex w-16 h-16 items-center gap-2 sm:gap-4">
-            <img
-              src="BEFlogo.png"
-              alt="Bharat Exam Fest"
-              className="w-full h-full rounded-sm object-cover"
-            />
-          </div>
+          
 
           {/* Navigation Section */}
           <div className="no-scrollbar flex  overflow-y-auto duration-300 ease-linear">

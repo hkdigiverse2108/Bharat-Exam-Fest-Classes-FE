@@ -11,13 +11,12 @@ export const imgUpload = async (file, token) => {
   try {
     if (!file) {
       toast.warning("No file selected");
-      return;
+      return { success: false, message: "No file selected" };
     }
 
     const formData = new FormData();
     formData.append("image", file);
 
-    // Configure the request
     const config = {
       method: "post",
       url: `${BASE_URL}/upload`,
@@ -30,22 +29,27 @@ export const imgUpload = async (file, token) => {
 
     // Make the API request
     const response = await axios.request(config);
-console.log(response);
+    console.log(response);
 
-    if (response.data && response.data.updatedAt) {
-      // Convert updatedAt from IST to UTC using convertIscToUtc function
-      const utcTime = convertIscToUtc(response.data.updatedAt);
-      console.log("Converted UTC time:", utcTime);
+    if (response.data) {
+      // Convert relevant date fields from ISC to UTC
+      const fieldsToConvert = ['created_at', 'updated_at', 'start_date', 'end_date', 'date'];
 
-      response.data.updatedAt = utcTime; // Update the response with the converted UTC time
+      fieldsToConvert.forEach(field => {
+        if (response.data[field]) {
+          response.data[field] = convertIscToUtc(response.data[field]);
+          console.log(`Converted ${field} to UTC:`, response.data[field]);
+        }
+      });
     }
 
-    return response;
+    toast.success("Image uploaded successfully");
+    return { success: true, data: response.data.data };
   } catch (err) {
-    // Handle any errors during the upload process
     console.error("Error uploading image:", err);
     const errorMessage =
-      err.response?.data?.message || "Failed to upload image."; // Extract error message if available
-    toast.error(errorMessage); // Show error toast
+      err.response?.data?.message || "Failed to upload image.";
+    toast.error(errorMessage);
+    return { success: false, message: errorMessage };
   }
 };

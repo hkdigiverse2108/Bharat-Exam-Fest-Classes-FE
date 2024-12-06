@@ -7,7 +7,7 @@ import LogoutConfimation from "./LogoutConfimation";
 import { logOut } from "../../Context/Action/Auth";
 import { logOutAdmin } from "../../Context/Action";
 import { useSelector } from "react-redux";
-// Latest
+// Latest 
 
 const DropdownUser = () => {
   const location = useLocation();
@@ -59,7 +59,7 @@ const DropdownUser = () => {
               />
             )}
           </span>
-          <span className="hidden text-left lg:block cursor-pointer">
+          <span className="text-left cursor-pointer">
             <span className="block text-sm font-medium text-black dark:text-white">
               {userData?.ownerName || "Welcome user"}
             </span>

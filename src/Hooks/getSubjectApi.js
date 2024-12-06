@@ -94,7 +94,6 @@ export const fetchData = async (token, subject, signal) => {
     if (response1.status === 200 && response2.status === 200) {
       const subTopic = response1?.data?.data?.sub_topic_data || [];
       const subjects = response2?.data?.data || [];
-      // console.log("subjectsApiData", subjects);
 
       const convertedSubTopics = subTopic.map((topic) => ({
         ...topic,
@@ -108,7 +107,7 @@ export const fetchData = async (token, subject, signal) => {
         ? [subjects]
         : [];
 
-      // Now, process the subjects (whether it's an array or single object)
+      // Apply `convertUtcToIst` to relevant date fields in subjects
       const convertedSubjects = subjectsResponseData.map((subjectData) => ({
         ...subjectData,
         createdAt: subjectData.createdAt
