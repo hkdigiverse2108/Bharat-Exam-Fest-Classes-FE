@@ -7,13 +7,13 @@ import LogoutConfimation from "./LogoutConfimation";
 import { logOut } from "../../Context/Action/Auth";
 import { logOutAdmin } from "../../Context/Action";
 import { useSelector } from "react-redux";
-// Latest 
+// Latest
 
 const DropdownUser = () => {
   const location = useLocation();
   const { pathname } = location;
 
-  const userData = useSelector((state) => state.userConfig.classesData);
+  const userData = useSelector((state) => state.userConfig?.classesData);
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [confirm, setConfirm] = useState(false);
@@ -45,25 +45,25 @@ const DropdownUser = () => {
           className="flex items-center gap-4 cursor-pointer"
         >
           <span className="h-12 w-12 rounded-full">
-            {userData?.image ? (
-              <img
-                src={userData?.image}
-                alt={userData?.name}
-                className="w-full h-full rounded-full object-cover"
-              />
+            <img
+              src={userData.image}
+              alt={userData.name}
+              className="w-full h-full rounded-full object-cover"
+            />
+            {/* {userData?.image ? (
             ) : (
               <img
                 src="BEFLogo.png"
                 alt={userData?.name}
                 className="w-full h-full rounded-full object-cover"
               />
-            )}
+            )} */}
           </span>
           <span className="text-left cursor-pointer">
             <span className="block text-sm font-medium text-black dark:text-white">
               {userData?.ownerName || "Welcome user"}
             </span>
-            <span className="block text-xs">{userData?.name}</span>
+            <span className="block text-xs">{userData.name}</span>
           </span>
           <svg
             className="fill-current cursor-pointer "

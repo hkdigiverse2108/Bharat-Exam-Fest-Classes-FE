@@ -1,5 +1,5 @@
 import axios from "axios";
-import { convertUtcToIst } from "../Utils/timeUtils";
+import { convertUtcToIsc } from "../Utils/timeUtils";
 import { toast } from "react-toastify";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
@@ -29,14 +29,14 @@ export const fetchSubjects = async (token, classesId, signal) => {
       const totalQuestions = response1?.data?.data || [];
       const subjects = response2?.data?.data?.subject_data || [];
 
-      // Apply `convertUtcToIst` to relevant date fields in `totalQuestions` and `subjects`
+      // Apply `convertUtcToIsc` to relevant date fields in `totalQuestions` and `subjects`
       const convertedTotalQuestions = totalQuestions.map((question) => ({
         ...question,
         createdAt: question.createdAt
-          ? convertUtcToIst(question.createdAt)
+          ? convertUtcToIsc(question.createdAt)
           : null,
         updatedAt: question.updatedAt
-          ? convertUtcToIst(question.updatedAt)
+          ? convertUtcToIsc(question.updatedAt)
           : null,
         // Add other date fields if applicable
       }));
@@ -44,10 +44,10 @@ export const fetchSubjects = async (token, classesId, signal) => {
       const convertedSubjects = subjects.map((subject) => ({
         ...subject,
         createdAt: subject.createdAt
-          ? convertUtcToIst(subject.createdAt)
+          ? convertUtcToIsc(subject.createdAt)
           : null,
         updatedAt: subject.updatedAt
-          ? convertUtcToIst(subject.updatedAt)
+          ? convertUtcToIsc(subject.updatedAt)
           : null,
         // Add other date fields if applicable
       }));
@@ -97,8 +97,8 @@ export const fetchData = async (token, subject, signal) => {
 
       const convertedSubTopics = subTopic.map((topic) => ({
         ...topic,
-        createdAt: topic.createdAt ? convertUtcToIst(topic.createdAt) : null,
-        updatedAt: topic.updatedAt ? convertUtcToIst(topic.updatedAt) : null,
+        createdAt: topic.createdAt ? convertUtcToIsc(topic.createdAt) : null,
+        updatedAt: topic.updatedAt ? convertUtcToIsc(topic.updatedAt) : null,
       }));
 
       const subjectsResponseData = Array.isArray(subjects)
@@ -107,14 +107,14 @@ export const fetchData = async (token, subject, signal) => {
         ? [subjects]
         : [];
 
-      // Apply `convertUtcToIst` to relevant date fields in subjects
+      // Apply `convertUtcToIsc` to relevant date fields in subjects
       const convertedSubjects = subjectsResponseData.map((subjectData) => ({
         ...subjectData,
         createdAt: subjectData.createdAt
-          ? convertUtcToIst(subjectData.createdAt)
+          ? convertUtcToIsc(subjectData.createdAt)
           : null,
         updatedAt: subjectData.updatedAt
-          ? convertUtcToIst(subjectData.updatedAt)
+          ? convertUtcToIsc(subjectData.updatedAt)
           : null,
       }));
 

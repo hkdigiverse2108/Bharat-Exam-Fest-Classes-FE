@@ -821,9 +821,9 @@ function EditQuestion() {
       console.log("No row data available");
       return;
     }
-  
+
     const { statement, id } = value.rowData;
-  
+
     // Handle delete action
     if (value.type === "delete") {
       // Remove the statement from the correct language's statementQuestion list
@@ -832,10 +832,10 @@ function EditQuestion() {
         const updatedStatements = prev[language].statementQuestion.filter(
           (item) => item.id !== id
         );
-  
+
         // Ensure the updated state doesn't include the deleted item
         console.log("Updated statements after delete:", updatedStatements);
-  
+
         return {
           ...prev,
           [language]: {
@@ -844,46 +844,49 @@ function EditQuestion() {
           },
         };
       });
-  
+
       console.log(`Deleted statement with id: ${id} from ${language}`);
       return; // Exit early to avoid adding back the deleted statement
     }
-  
+
     // Validate the statement if it's not being deleted
     if (typeof statement !== "string") {
       console.log("Invalid input data: statement is not a string");
       return;
     }
-  
+
     if (!statement.trim()) {
       console.log("Invalid statement: Missing statement");
       return;
     }
-  
+
     const finalCombined = {
       id: id,
       statement: statement,
     };
-  
+
     // Update based on language
     setEditQuestion((prev) => {
       let updatedStatements = [...prev[language].statementQuestion];
-  
+
       // Check if the statement with the given id exists
       const existingStatementIndex = updatedStatements.findIndex(
         (item) => item.id === id
       );
-  
+
       if (existingStatementIndex !== -1) {
         // If statement exists, update it
-        updatedStatements[existingStatementIndex] = { ...updatedStatements[existingStatementIndex], ...finalCombined };
+        updatedStatements[existingStatementIndex] = {
+          ...updatedStatements[existingStatementIndex],
+          ...finalCombined,
+        };
       } else {
         // If statement doesn't exist, push the new statement
         updatedStatements.push(finalCombined);
       }
-  
+
       console.log("Updated statements:", updatedStatements);
-  
+
       return {
         ...prev,
         [language]: {
@@ -893,7 +896,6 @@ function EditQuestion() {
       };
     });
   };
-  
 
   const handleStatementQuestionChange = (event) => {
     const { name, value } = event.target;
@@ -969,9 +971,9 @@ function EditQuestion() {
       console.log("No row data available");
       return;
     }
-  
+
     const { pairA, pairB, id } = value.rowData;
-  
+
     // Handle delete action
     if (value.type === "delete") {
       setEditQuestion((prev) => {
@@ -979,7 +981,7 @@ function EditQuestion() {
         const updatedPair = prev[language].pairQuestion.filter(
           (item) => item.id !== id
         );
-  
+
         return {
           ...prev,
           [language]: {
@@ -991,39 +993,39 @@ function EditQuestion() {
       console.log(`Deleted pair with id: ${id}`);
       return; // Exit early after handling the delete
     }
-  
+
     // Validate pair data
     if (typeof pairA !== "string" || typeof pairB !== "string") {
       console.log("Invalid input data: pairA or pairB is not a string");
       return;
     }
-  
+
     if (!pairA || !pairB) {
       toast.warn("Invalid pair: Missing pairA or pairB");
       return;
     }
-  
+
     // Combine pairA and pairB into a single string
     const combinedPair = `${pairA} --- ${pairB}`;
-  
+
     // Prepare the final object with id and combined pair data
     const finalCombined = {
       id: id,
       combined: combinedPair,
     };
-  
+
     // Update the pair question data in the state
     setEditQuestion((prev) => {
       // Update or add the pair question based on the id
       const updatedPairQuestion = prev[language].pairQuestion.map((pair) =>
         pair.id === id ? { ...pair, ...finalCombined } : pair
       );
-  
+
       // If the pair doesn't exist in the array, push it as a new pair
       if (!updatedPairQuestion.some((pair) => pair.id === id)) {
         updatedPairQuestion.push(finalCombined);
       }
-  
+
       // Return the updated state
       return {
         ...prev,
@@ -1033,29 +1035,27 @@ function EditQuestion() {
         },
       };
     });
-  
+
     console.log(`Updated pair with id: ${id}, Combined pair: ${combinedPair}`);
   };
-  
+
   const handleChange = (event) => {
     const { name, value } = event.target;
 
     const [lang, field, option] = name.split(".");
     if (lang === "englishQuestion" || lang === "hindiQuestion") {
       if (field === "options" && option) {
-
         setEditQuestion((prev) => ({
           ...prev,
           [lang]: {
             ...prev[lang],
             options: {
               ...prev[lang].options,
-              [option]: value, 
+              [option]: value,
             },
           },
         }));
       } else {
-
         setEditQuestion((prev) => ({
           ...prev,
           [lang]: {
@@ -1134,24 +1134,13 @@ function EditQuestion() {
       !Object.values(hindiOptions).every((val) => val)
     );
   };
-
+  
   const EditQuestion = async () => {
     try {
       if (isEmpty()) {
         toast.warning("Please fill up empty fields.");
       } else {
-        const {
-          _id,
-          updatedAt,
-          updatedBy,
-          updatedAt,
-          createdAt,
-          isBlocked,
-          isDeleted,
-          createdBy,
-          createdAt,
-          ...questionData
-        } = editQuestion;
+        const { _id, ...questionData } = editQuestion;
         const response = await editQuestionAPI(questionData, accessToken);
         if (response.status === 200) {
           toast.success(
@@ -1175,6 +1164,7 @@ function EditQuestion() {
     if (fetchedData) {
       const updatedState = {
         ...getInitialEditQuestionState(fetchedData.questionType),
+
         ...fetchedData,
         questionId: fetchedData._id,
       };

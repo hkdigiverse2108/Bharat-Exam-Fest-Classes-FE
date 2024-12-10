@@ -49,7 +49,7 @@ const EnglishQueStatementBaseform = ({
         className="border-2 pl-2 text-lg  border-gray-400 hover:border-gray-400 transition-colors rounded-md w-full py-2 px-3 text-gray-800 leading-tight focus:outline-none focus:ring-purple-600 focus:border-purple-600 focus:shadow-outline"
         id="username"
         type="text"
-        placeholder="Enter question"
+        placeholder="Enter statement"
         onChange={handleChange}
         name="englishQuestion.lastQuestion"
       />

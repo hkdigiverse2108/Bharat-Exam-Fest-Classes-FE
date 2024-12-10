@@ -1,7 +1,6 @@
 import axios from "axios";
-import { convertIscToUtc, convertUtcToIst } from "../Utils/timeUtils"; // Import the time conversion function
+import { convertIscToUtc, convertUtcToIsc } from "../Utils/timeUtils"; // Import the time conversion function
 import { toast } from "react-toastify";
-import { keyframes } from "@emotion/react";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -35,36 +34,31 @@ export const fetchQuestionsBySubject = async (
     const Questions = response1?.data?.data?.question_data || [];
     const subTopics = response2?.data?.data?.sub_topic_data || [];
 
-    // Apply convertUtcToIst to relevant date fields in Questions
+    // Apply convertUtcToIsc to relevant date fields in Questions
     const convertedQuestions = Questions.map((question) => ({
       ...question,
       createdAt: question.createdAt
-        ? convertUtcToIst(question.createdAt)
+        ? convertUtcToIsc(question.createdAt)
         : null,
       updatedAt: question.updatedAt
-        ? convertUtcToIst(question.updatedAt)
+        ? convertUtcToIsc(question.updatedAt)
         : null,
-      start_date: question.start_date
-        ? convertUtcToIst(question.start_date)
+      startDate: question.startDate
+        ? convertUtcToIsc(question.start_date)
         : null,
-      end_date: question.end_date
-        ? convertUtcToIst(question.end_date)
-        : null,
-      date: question.date
-        ? convertUtcToIst(question.date)
-        : null,
+      endDate: question.end_date ? convertUtcToIsc(question.end_date) : null,
     }));
 
     console.log("Converted Questions:", convertedQuestions);
 
-    // Apply convertUtcToIst to relevant date fields in Sub-Topics if needed
+    // Apply convertUtcToIsc to relevant date fields in Sub-Topics if needed
     const convertedSubTopics = subTopics.map((subTopic) => ({
       ...subTopic,
       createdAt: subTopic.createdAt
-        ? convertUtcToIst(subTopic.createdAt)
+        ? convertUtcToIsc(subTopic.createdAt)
         : null,
       updatedAt: subTopic.updatedAt
-        ? convertUtcToIst(subTopic.updatedAt)
+        ? convertUtcToIsc(subTopic.updatedAt)
         : null,
       // Add other date fields if necessary
     }));
@@ -106,19 +100,10 @@ export const getQuestionData = async (token, questionId, signal) => {
       // Convert date fields from UTC to IST if they exist
       if (questionData) {
         questionData.createdAt = questionData.createdAt
-          ? convertUtcToIst(questionData.createdAt)
+          ? convertUtcToIsc(questionData.createdAt)
           : null;
         questionData.updatedAt = questionData.updatedAt
-          ? convertUtcToIst(questionData.updatedAt)
-          : null;
-        questionData.start_date = questionData.start_date
-          ? convertUtcToIst(questionData.start_date)
-          : null;
-        questionData.end_date = questionData.end_date
-          ? convertUtcToIst(questionData.end_date)
-          : null;
-        questionData.date = questionData.date
-          ? convertUtcToIst(questionData.date)
+          ? convertUtcToIsc(questionData.updatedAt)
           : null;
       }
 
@@ -177,14 +162,11 @@ export const addNewQuestion = async (addQuestion, token) => {
     if (addQuestion.updatedAt) {
       addQuestion.updatedAt = convertIscToUtc(addQuestion.updatedAt);
     }
-    if (addQuestion.start_date) {
-      addQuestion.start_date = convertIscToUtc(addQuestion.start_date);
+    if (addQuestion.startDate) {
+      addQuestion.startDate = convertIscToUtc(addQuestion.startDate);
     }
-    if (addQuestion.end_date) {
-      addQuestion.end_date = convertIscToUtc(addQuestion.end_date);
-    }
-    if (addQuestion.date) {
-      addQuestion.date = convertIscToUtc(addQuestion.date);
+    if (addQuestion.endDate) {
+      addQuestion.endDate = convertIscToUtc(addQuestion.endDate);
     }
 
     const data = JSON.stringify(addQuestion);
@@ -227,14 +209,11 @@ export const editQuestionAPI = async (editQuestion, token) => {
     if (editQuestion.updatedAt) {
       editQuestion.updatedAt = convertIscToUtc(editQuestion.updatedAt);
     }
-    if (editQuestion.start_date) {
-      editQuestion.start_date = convertIscToUtc(editQuestion.start_date);
+    if (editQuestion.startDate) {
+      editQuestion.startDate = convertIscToUtc(editQuestion.startDate);
     }
-    if (editQuestion.end_date) {
-      editQuestion.end_date = convertIscToUtc(editQuestion.end_date);
-    }
-    if (editQuestion.date) {
-      editQuestion.date = convertIscToUtc(editQuestion.date);
+    if (editQuestion.endDate) {
+      editQuestion.endDate = convertIscToUtc(editQuestion.endDate);
     }
 
     const data = JSON.stringify(editQuestion);
