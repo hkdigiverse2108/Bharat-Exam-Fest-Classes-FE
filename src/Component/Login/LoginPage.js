@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { VscEyeClosed } from "react-icons/vsc";
 import { RxEyeOpen } from "react-icons/rx";
@@ -65,7 +65,6 @@ function LoginPage() {
     navigate("/");
   };
 
-  // Handle Login Button Click
   const handleLoginClick = async () => {
     try {
       if (isEmptyLogin()) {
@@ -81,12 +80,10 @@ function LoginPage() {
         }
       }
     } catch (err) {
-      // Handle any error during the login
       toast.error("Login failed: " + err.message);
     }
   };
 
-  // Handle OTP Verification Button Click
   const handleOtpVerification = async () => {
     try {
       if (isEmpty(otpValue)) {
@@ -112,36 +109,34 @@ function LoginPage() {
 
   function Signup() {
     try {
-      const validationMessages = [];
-
       if (!uniqueId || !password) {
-        validationMessages.push("Fill up empty field!");
-      } else {
-        if (!uniqueId.match(emailpatton)) {
-          validationMessages.push("Email doesn't match!");
-        } else if (!password.match(spcl)) {
-          validationMessages.push("Must include a symbol in password!");
-        } else if (!password.match(numbers)) {
-          validationMessages.push("Must include a digit in password!");
-        } else if (!password.match(upperCaseLetters)) {
-          validationMessages.push(
-            "Must include uppercase letters in password!"
-          );
-        } else if (!password.match(lowerCaseLetters)) {
-          validationMessages.push(
-            "Must include lowercase letters in password!"
-          );
-        }
-      }
-
-      if (validationMessages.length > 0) {
-        validationMessages.forEach((message) => toast.warn(message));
+        toast.warn("Fill up empty fields!");
         return;
       }
-
+      if (!uniqueId.match(emailpatton)) {
+        toast.warn("Email doesn't match!");
+        return;
+      }
+      if (!password.match(spcl)) {
+        toast.warn("Password must include a symbol!");
+        return;
+      }
+      if (!password.match(numbers)) {
+        toast.warn("Password must include a digit!");
+        return;
+      }
+      if (!password.match(upperCaseLetters)) {
+        toast.warn("Password must include an uppercase letter!");
+        return;
+      }
+      if (!password.match(lowerCaseLetters)) {
+        toast.warn("Password must include a lowercase letter!");
+        return;
+      }
       handleLoginClick();
     } catch (error) {
-      console.error(error);
+      console.error("Signup error:", error);
+      toast.error("An error occurred during signup. Please try again later.");
     }
   }
 
@@ -200,19 +195,26 @@ function LoginPage() {
                 Enter a strong password.
               </p>
             </div>
-            <div className="flex items-start justify-start ms-2">
-              <input
-                id="default-checkbox"
-                type="checkbox"
-                value=""
-                className="cursor-pointer w-4 h-4 text-blue-600 capitalize bg-gray-100 border-gray-300 rounded-sm   dark:bg-gray-700 dark:border-gray-600"
-              />
-              <label
-                htmlFor="default-checkbox"
-                className="ms-2 select-none text-sm capitalize text-gray-600 dark:text-gray-300"
+            <div className="flex flex-wrap items-center justify-between my-4">
+              <div className="flex items-start justify-start ms-2">
+                <input
+                  id="default-checkbox"
+                  type="checkbox"
+                  value=""
+                  className="cursor-pointer w-4 h-4 text-blue-600 capitalize bg-gray-100 border-gray-300 rounded-sm   dark:bg-gray-700 dark:border-gray-600"
+                />
+                <label
+                  htmlFor="default-checkbox"
+                  className="ms-2 select-none text-sm capitalize text-gray-600 dark:text-gray-300"
+                >
+                  remenber me
+                </label>
+              </div>
+              <div
+                className="text-blue-800 hover:underline"
               >
-                remenber me
-              </label>
+                <p>Forgot password?</p>
+              </div>
             </div>
           </div>
           <button
@@ -228,7 +230,7 @@ function LoginPage() {
             confirm={confirm}
             setConfirm={handleLogin}
             onClose={handleToggle}
-            email={input.uniqueId} // Pass the user's email or any relevant data
+            email={input.uniqueId}
             otpValue={otpValue}
             handleChangeOTP={handleChangeOTP}
             handleOtpverify={handleOtpVerification}

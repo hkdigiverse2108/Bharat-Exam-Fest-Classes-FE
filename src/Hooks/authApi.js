@@ -22,12 +22,11 @@ export const handleLogin = async (input) => {
 
     const response = await axios.request(config);
     console.log(response);
-    
+
     const { status, data, message, error } = response.data;
 
     if (response.status === 200) {
       if (response.data.data.lastLogin) {
-        // Convert lastLogin from IST to UTC
         response.data.data.lastLogin = convertIscToUtc(
           response.data.data.lastLogin
         );
@@ -49,7 +48,11 @@ export const handleLogin = async (input) => {
 export const verifyOtp = async (otpValue) => {
   try {
     const data = JSON.stringify(otpValue);
-
+    if (otpValue) {
+      const utcTime = convertIscToUtc(otpValue.otpVerifiedAt);
+      console.log(`Converted ${otpValue.otpVerifiedAt} to UTC:`, utcTime);
+      otpValue.otpVerifiedAt = utcTime;
+    }
     const config = {
       method: "post",
       maxBodyLength: Infinity,
@@ -64,17 +67,6 @@ export const verifyOtp = async (otpValue) => {
 
     if (response.status === 200) {
       console.log(response.data);
-
-      if (response.data.data.otpVerifiedAt) {
-        // Convert otpVerifiedAt from IST to UTC
-        response.data.data.otpVerifiedAt = convertIscToUtc(
-          response.data.data.otpVerifiedAt
-        );
-        console.log(
-          "Converted OTP Verification Time (UTC):",
-          response.data.data.otpVerifiedAt
-        );
-      }
       return response;
     } else {
       console.error("OTP verification failed");
@@ -86,4 +78,3 @@ export const verifyOtp = async (otpValue) => {
     toast.error("An error occurred during OTP verification");
   }
 };
-

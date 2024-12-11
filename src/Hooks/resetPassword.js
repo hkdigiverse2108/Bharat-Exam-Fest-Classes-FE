@@ -1,12 +1,26 @@
 import axios from "axios";
-import moment from "moment-timezone";
-import { convertIscToUtc, convertUtcToIst } from "../Utils/timeUtils"; // Import the time conversion function
+import { convertIscToUtc } from "../Utils/timeUtils";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 export const resetPasswordApiCall = async (currentUser, token) => {
   try {
     const data = JSON.stringify(currentUser);
+    if (currentUser) {
+      const fieldsToConvert = [
+        "createdAt",
+        "updatedAt",
+        "startDate",
+        "endDate",
+      ];
+      fieldsToConvert.forEach((field) => {
+        if (currentUser[field]) {
+          const utcTime = convertIscToUtc(currentUser[field]);
+          console.log(`Converted ${field} to UTC:`, utcTime);
+          currentUser[field] = utcTime;
+        }
+      });
+    }
 
     const config = {
       method: "post",
@@ -20,19 +34,6 @@ export const resetPasswordApiCall = async (currentUser, token) => {
 
     const response = await axios.request(config);
 
-    if (response.data) {
-      // Check and convert relevant date fields from IST to UTC
-      const fieldsToConvert = ['createdAt', 'updatedAt', 'start_date', 'end_date', 'date'];
-
-      fieldsToConvert.forEach((field) => {
-        if (response.data[field]) {
-          // Convert the date field from IST to UTC
-          const utcTime = convertIscToUtc(response.data[field]);
-          console.log(`Converted ${field} to UTC:`, utcTime);
-          response.data[field] = utcTime; // Update the response with the converted UTC time
-        }
-      });
-    }
 
     return response;
   } catch (err) {
@@ -44,4 +45,3 @@ export const resetPasswordApiCall = async (currentUser, token) => {
     );
   }
 };
-

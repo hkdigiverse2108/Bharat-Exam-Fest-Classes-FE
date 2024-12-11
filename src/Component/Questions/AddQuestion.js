@@ -446,7 +446,7 @@ function AddQuestion() {
       }
 
       setSubjectname(subjects);
-      setSelectedSubject("");
+      setSelectedSubject(subjects);
       setSubtopics(subTopic);
     } catch (error) {
       if (error.name === "AbortError") {
@@ -551,8 +551,8 @@ function AddQuestion() {
                       <SingleSelect
                         label="Subject"
                         options={subjectname}
-                        selectedValue={selectedSubject}
                         onSubjectChange={handleSubjectChange}
+                        selectedValue={selectedSubject}
                       />
                     </div>
 
