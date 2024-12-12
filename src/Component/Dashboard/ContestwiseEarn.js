@@ -1,11 +1,23 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FiFilter } from "react-icons/fi";
 import Pagination from "../Pagination/Pagination";
-import FilterdropDown from "../Ui/FilterdropDown";
+import FilterdropDownTest from "../Ui/FilterDropDownTest";
 
-export default function ContestwiseEarn() {
+export default function ContestwiseEarn({ data }) {
   const [toggle, setToggle] = useState(false);
-  const [filtertype, setFiltertype] = useState();
+  const [filtertype, setFiltertype] = useState("");
+  const [contestData, setContestData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [dataToDisplay, setDataToDisplay] = useState([]);
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(contestData.length / itemsPerPage);
+  const start = (currentPage - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+
+  
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   function handleChange(e) {
     setFiltertype(e.target.innerText);
@@ -28,8 +40,8 @@ export default function ContestwiseEarn() {
             <p className=" font-semibold">Filter</p>
           </button>
         </div>
-        <div className={`${toggle === true ? "block" : "hidden"}`}>
-          <FilterdropDown
+        <div className={`${toggle === true ? "block absolute right-1 z-1" : "hidden"}`}>
+          <FilterdropDownTest
             toggle={toggle}
             setToggle={() => handleShow()}
             filtertype={filtertype}
@@ -37,68 +49,48 @@ export default function ContestwiseEarn() {
           />
         </div>
         <div className="bg-white overflow-auto rounded-xl px-0">
-          <table className="w-full min-w-max table-auto  text-left">
-            <thead>
+          <table className="min-w-full divide-y divide-gray-200 ">
+            <thead className="border-b border-neutral-200  font-medium dark:border-white/10">
               <tr>
-                <th className="cursor-pointer border-y border-slate-200 bg-slate-300 hover:bg-slate-200 p-4 transition-colors ">
-                  <p className="antialiased font-sans text-sm flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                    Contest Name
-                    <svg viewBox="0 0 24 24" className="h-4 w-4">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"
-                      ></path>
-                    </svg>
-                  </p>
-                </th>
-                <th className="cursor-pointer border-y border-slate-200 bg-slate-300 hover:bg-slate-200 p-4 transition-colors ">
-                  <p className="antialiased font-sans text-sm flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                    Count
-                    <svg viewBox="0 0 24 24" className="h-4 w-4">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"
-                      ></path>
-                    </svg>
-                  </p>
-                </th>
-                <th className="cursor-pointer border-y border-slate-200 bg-slate-300 hover:bg-slate-200 p-4 transition-colors ">
-                  <p className="antialiased font-sans text-sm flex items-center justify-between gap-2 font-normal leading-none opacity-70">
-                    Earning
-                    <svg viewBox="0 0 24 24" className="h-4 w-4">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"
-                      ></path>
-                    </svg>
-                  </p>
-                </th>
+                {["Contest Name", "Count", "Earning"].map((header, index) => (
+                  <th
+                    key={`header-${index}`}
+                    scope="col"
+                    className="cursor-pointer border-y border-slate-200 bg-slate-300 hover:bg-slate-200 p-4 transition-colors"
+                  >
+                    <p className="antialiased font-sans text-sm flex items-center justify-between gap-x-2 font-normal">
+                      {header}
+                    </p>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td className="p-4 border-b border-blue-gray-50">
-                  <p className="block antialiased font-sans text-sm leading-normal font-normal">
-                    name
-                  </p>
-                </td>
-                <td className="p-4 border-b border-blue-gray-50 overflow-hidden text-wrap  max-w-xs">
-                  <p className="block antialiased font-sans text-sm leading-normal font-normal">
-                    30
-                  </p>
-                </td>
-                <td className="p-4 border-b border-blue-gray-50">
-                  <p className="block antialiased font-sans text-sm leading-normal font-normal">
-                    ₹33,900
-                  </p>
-                </td>
-              </tr>
+              {data &&
+                data.contests &&
+                data.contests.map((user, index) => {
+                  const { contestName, users, totalFees } = user;
+
+                  return (
+                    <>
+                      <tr
+                        key={index}
+                        className="border-b border-neutral-200 transition duration-300 ease-in-out hover:bg-neutral-100 dark:border-white/10 dark:hover:bg-neutral-600"
+                      >
+                        <td className="p-3 whitespace-nowrap">{contestName}</td>
+                        <td className="p-3 whitespace-nowrap"> {users}</td>
+                        <td className="p-3 whitespace-nowrap">{totalFees}</td>
+                      </tr>
+                    </>
+                  );
+                })}
             </tbody>
           </table>
-          <Pagination />
+          <Pagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+          />
         </div>
       </section>
     </>

@@ -101,24 +101,7 @@ function SubjectPage() {
     };
   }, [debounceGetData, accessToken, _id]);
 
-  // useEffect(() => {
-  //   const fetchSubjectsData = async () => {
-  //     setIsLoading(true);
-  //     try {
-  //       const { totalQuestions, subjects } = await fetchSubjects(accessToken, _id);
-  //       setData(subjects);
-  //       setTotalQuestion(totalQuestions);
-  //       setIsLoading(false);
-  //     } catch (error) {
-  //       setNetworkError(error.message || "Network error occurred");
-  //       console.error(
-  //         "Error fetching subjects: " + (error.message || "Unknown error")
-  //       );
-  //     }
-  //   };
 
-  //   fetchSubjectsData();
-  // }, [_id, accessToken]);
   return (
     <>
       <section>

@@ -4,7 +4,7 @@ import { TfiStatsUp, TfiStatsDown } from "react-icons/tfi";
 import { FiBox } from "react-icons/fi";
 import { AiOutlineLineChart } from "react-icons/ai";
 
-function Dashboard() {
+function Dashboard({ data, earning }) {
   return (
     <>
       <section className="py-4">
@@ -26,7 +26,7 @@ function Dashboard() {
               </div>
             </div>
             <div className="text-start">
-              <p className="font-semibold text-2xl">40,000 </p>
+              <p className="font-semibold text-2xl">{data.contests || 0} </p>
             </div>
             <div className="flex items-center gap-x-1 text-md font-medium text-meta-3">
               <svg className="text-green-600 w-6 h-6" viewBox="0 0 16 16">
@@ -58,7 +58,7 @@ function Dashboard() {
               </div>
             </div>
             <div className="text-start">
-              <p className="font-semibold text-2xl">40,000 </p>
+              <p className="font-semibold text-2xl">{data.questions || 0}</p>
             </div>
             <div className="flex items-center gap-x-1 text-md font-medium text-meta-3">
               <svg className="text-green-600 w-6 h-6" viewBox="0 0 16 16">
@@ -90,7 +90,7 @@ function Dashboard() {
               </div>
             </div>
             <div className="text-start">
-              <p className="font-semibold text-2xl">9,000 </p>
+              <p className="font-semibold text-2xl">{data.users ||0}</p>
             </div>
             <div className="flex items-center gap-x-1 text-md font-medium text-meta-3">
               <svg className="text-red-600 w-6 h-6" viewBox="0 0 16 16">
@@ -122,7 +122,9 @@ function Dashboard() {
               </div>
             </div>
             <div className="text-start">
-              <p className="font-semibold text-2xl">10,000 </p>
+              <p className="font-semibold text-2xl">
+                {earning.overallTotalFees || 0}
+              </p>
             </div>
             <div className="flex items-center gap-x-1 text-md font-medium text-meta-3">
               <svg className="text-green-600 w-6 h-6" viewBox="0 0 16 16">

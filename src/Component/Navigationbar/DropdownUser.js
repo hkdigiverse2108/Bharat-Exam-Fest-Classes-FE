@@ -50,21 +50,13 @@ const DropdownUser = () => {
               alt={userData.name}
               className="w-full h-full rounded-full object-cover"
             />
-            {/* {userData?.image ? (
-            ) : (
-              <img
-                src="BEFLogo.png"
-                alt={userData?.name}
-                className="w-full h-full rounded-full object-cover"
-              />
-            )} */}
           </span>
-          <span className="text-left cursor-pointer">
+          <div className="hidden sm:block text-left cursor-pointer ">
             <span className="block text-sm font-medium text-black dark:text-white">
               {userData?.ownerName || "Welcome user"}
             </span>
             <span className="block text-xs">{userData.name}</span>
-          </span>
+          </div>
           <svg
             className="fill-current cursor-pointer "
             width="12"
@@ -83,7 +75,7 @@ const DropdownUser = () => {
 
         {/* Dropdown menu */}
         {dropdownOpen && (
-          <div className="absolute right-0 top-14 flex w-62.5 flex-col rounded-md border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+          <div className="absolute right-0 sm:right-0 top-14 flex w-62.5 flex-col rounded-md border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark md:w-80 lg:w-96 xl:w-100">
             <ul className="flex flex-col text-left font-medium capitalize dark:text-white">
               <li onClick={toggleDropdown}>
                 <NavLink to="/profileUpdate">

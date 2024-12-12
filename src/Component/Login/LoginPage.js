@@ -76,11 +76,11 @@ function LoginPage() {
           dispatch(loginAdmin(response.data.data));
           handleToggle();
         } else {
-          toast.error(response.data.message);
+          console.error(response.data.message);
         }
       }
     } catch (err) {
-      toast.error("Login failed: " + err.message);
+      console``.error("Login failed: " + err.message);
     }
   };
 

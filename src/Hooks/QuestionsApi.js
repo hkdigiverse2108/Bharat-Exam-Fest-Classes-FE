@@ -1,5 +1,5 @@
 import axios from "axios";
-import { convertIscToUtc, convertUtcToIsc } from "../Utils/timeUtils"; // Import the time conversion function
+import { convertIscToUtc, convertUtcToIst } from "../Utils/timeUtils"; // Import the time conversion function
 import { toast } from "react-toastify";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
@@ -34,31 +34,31 @@ export const fetchQuestionsBySubject = async (
     const Questions = response1?.data?.data?.question_data || [];
     const subTopics = response2?.data?.data?.sub_topic_data || [];
 
-    // Apply convertUtcToIsc to relevant date fields in Questions
+    // Apply convertUtcToIst to relevant date fields in Questions
     const convertedQuestions = Questions.map((question) => ({
       ...question,
       createdAt: question.createdAt
-        ? convertUtcToIsc(question.createdAt)
+        ? convertUtcToIst(question.createdAt)
         : null,
       updatedAt: question.updatedAt
-        ? convertUtcToIsc(question.updatedAt)
+        ? convertUtcToIst(question.updatedAt)
         : null,
       startDate: question.startDate
-        ? convertUtcToIsc(question.start_date)
+        ? convertUtcToIst(question.start_date)
         : null,
-      endDate: question.end_date ? convertUtcToIsc(question.end_date) : null,
+      endDate: question.end_date ? convertUtcToIst(question.end_date) : null,
     }));
 
     console.log("Converted Questions:", convertedQuestions);
 
-    // Apply convertUtcToIsc to relevant date fields in Sub-Topics if needed
+    // Apply convertUtcToIst to relevant date fields in Sub-Topics if needed
     const convertedSubTopics = subTopics.map((subTopic) => ({
       ...subTopic,
       createdAt: subTopic.createdAt
-        ? convertUtcToIsc(subTopic.createdAt)
+        ? convertUtcToIst(subTopic.createdAt)
         : null,
       updatedAt: subTopic.updatedAt
-        ? convertUtcToIsc(subTopic.updatedAt)
+        ? convertUtcToIst(subTopic.updatedAt)
         : null,
       // Add other date fields if necessary
     }));
@@ -100,10 +100,10 @@ export const getQuestionData = async (token, questionId, signal) => {
       // Convert date fields from UTC to IST if they exist
       if (questionData) {
         questionData.createdAt = questionData.createdAt
-          ? convertUtcToIsc(questionData.createdAt)
+          ? convertUtcToIst(questionData.createdAt)
           : null;
         questionData.updatedAt = questionData.updatedAt
-          ? convertUtcToIsc(questionData.updatedAt)
+          ? convertUtcToIst(questionData.updatedAt)
           : null;
       }
 

@@ -11,6 +11,7 @@ import EditQuestion from "./Component/Questions/EditQuestion";
 import ProfilePage from "./Component/ProfilePage/ProfilePage";
 import Loading from "./Component/Loader/Loading";
 import PasswordUpdate from "./Component/NewPassword/PasswordUpdate";
+import StudentPage from "./Component/Studens/StudentPage";
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -43,6 +44,7 @@ function App() {
             <Route path="/subjectDetails" element={<SubjectDetails />} />
             <Route path="/addQuestion" element={<AddQuestion />} />
             <Route path="/editQuestion" element={<EditQuestion />} />
+            <Route path="/student" element={<StudentPage />} />
             <Route path="/profileUpdate" element={<ProfilePage />} />
             <Route exact path="/resetpassword" element={<PasswordUpdate />} />
           </Routes>

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { GoSearch } from "react-icons/go";
+import { RiMenuLine } from "react-icons/ri";
+
 import DropdownUser from "./DropdownUser";
 
 const Header = () => {
@@ -16,12 +17,12 @@ const Header = () => {
     <>
       <header className="sticky top-0 z-999 h-20 flex w-full bg-white shadow-2  drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none">
         <div className="flex flex-grow items-center gap-x-10 px-4 py-4  md:px-6 2xl:px-11">
-        <div className="h-18 w-18">
-          <img
-            src="BEFLogo.png"
-            alt="Bharat Exam Fest"
-            className="w-full h-full rounded-md object-cover"
-          />
+          <div className="h-18 w-18">
+            <img
+              src="BEFLogo.png"
+              alt="Bharat Exam Fest"
+              className="w-full h-full rounded-md object-cover"
+            />
           </div>
           {/* Navigation Section */}
           <div className="no-scrollbar flex  overflow-y-auto duration-300 ease-linear">
@@ -52,27 +53,40 @@ const Header = () => {
                     Add Question
                   </NavLink>
                 </li>
+                <li>
+                  <NavLink
+                    to="/student"
+                    className={` ${
+                      pathname === "/student"
+                        ? "text-white bg-orange-600"
+                        : "text-black"
+                    } group relative flex items-center gap-2.5 outline-none rounded-md duration-300 ease-in-out capitalize hover:text-white hover:bg-gray-600 py-2 px-4  font-medium`}
+                  >
+                    Students
+                  </NavLink>
+                </li>
               </ul>
             </nav>
           </div>
         </div>
         {/* User Dropdown */}
-        <div className="items-center gap-3 2xsm:gap-7 flex  px-4 py-4 md:px-6 2xl:px-11">
+        <div className="items-center gap-x-3 flex  px-4 py-4 ">
           <DropdownUser />
+
           <button
-            className="md:hidden text-xl transition-all duration-300 ease-in-out"
+            className="text-md lg:hidden text-slate-500 p-2 border border-orange-400 hover:bg-orange-100 hover:text-black rounded-full"
             onClick={toggleMenu}
-            aria-label="Toggle Menu"
+            title="Menu"
           >
-            {isMenuOpen ? "X" : "☰"}
+            <RiMenuLine className="h-6 w-6" />
           </button>
         </div>
       </header>
       <div
         className={`${
           isMenuOpen === true
-            ? "block lg:hidden w-full px-4 py-6 bg-slate-200 border-b shadow-default duration-300 ease-linear"
-            : "hidden"
+            ? "block lg:hidden w-full h-48 px-4 py-6 bg-slate-200 border-b shadow-default transition duration-150 ease-in-out opacity-100 translate-y-0"
+            : "hidden opacity-0 -translate-y-full"
         }`}
         id="mobile-menu"
       >
@@ -101,6 +115,18 @@ const Header = () => {
                 } group relative flex items-center gap-2.5 outline-none rounded-md duration-300 ease-in-out capitalize hover:text-white hover:bg-gray-600 py-2 px-4 font-medium`}
               >
                 Add Question
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/student"
+                className={` ${
+                  pathname === "/student"
+                    ? "text-white bg-orange-600"
+                    : "text-black"
+                } group relative flex items-center gap-2.5 outline-none rounded-md duration-300 ease-in-out capitalize hover:text-white hover:bg-gray-600 py-2 px-4  font-medium`}
+              >
+                Students
               </NavLink>
             </li>
           </ul>
