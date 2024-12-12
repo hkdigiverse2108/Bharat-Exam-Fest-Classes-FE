@@ -231,7 +231,7 @@ export const editQuestionAPI = async (editQuestion, token) => {
     const response = await axios.request(config);
 
     if (response.status === 200) {
-      // If the response contains createdAt field, convert it from IST to UTC
+
       if (response.data.createdAt) {
         const utcTime = convertIscToUtc(response.data.createdAt); // Convert from IST to UTC
         console.log("Converted UTC time:", utcTime); // Log the converted time
