@@ -14,13 +14,13 @@ function StudentPage() {
       state.authConfig.userInfo[0]?.data?.token ||
       state.authConfig.userInfo[0]?.token
   );
-  const { users, loading, error } = useSelector((state) => state?.users || {});
+  // const { users, loading, error } = useSelector((state) => state?.users || {});
 
   const [studentDetails, setStudentDetails] = useState([]);
   const [approve, setApprove] = useState(true);
   const [dataToDisplay, setDataToDisplay] = useState([]);
-  // const [error, setError] = useState(null);
-  // const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const totalPages = Math.ceil(studentDetails.length / itemsPerPage);
@@ -94,38 +94,39 @@ function StudentPage() {
     });
   };
 
+  useEffect(() => {
+    const getUserData = async () => {
+      setLoading(true);
+      try {
+        const result = await fetchUserList(accessToken);
+
+        if (result && result.success) {
+          setStudentDetails(result.dataList);
+          setLoading(false);
+        } else {
+          setError("No data available or invalid response structure.");
+        }
+      } catch (err) {
+        console.error("Error fetching contest data:", err);
+        setError(
+          err.message || "An error occurred while fetching contest data"
+        );
+        setLoading(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getUserData();
+  }, [accessToken]);
+
   // useEffect(() => {
-  //   const getUserData = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const result = await fetchUserList(accessToken);
-
-  //       if (result && result.success) {
-  //         setStudentDetails(result.dataList);
-  //         setLoading(false);
-  //       } else {
-  //         setError("No data available or invalid response structure.");
-  //       }
-  //     } catch (err) {
-  //       console.error("Error fetching contest data:", err);
-  //       setError(
-  //         err.message || "An error occurred while fetching contest data"
-  //       );
-  //       setLoading(false);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   getUserData();
-  // }, [accessToken]);
-  useEffect(() => {
-    dispatch(fetchUsers());
-  }, [dispatch]);
+  //   dispatch(fetchUsers());
+  // }, [dispatch]);
 
   useEffect(() => {
-    console.log(users);
-  }, [accessToken, users]);
+    console.log(studentDetails);
+  }, [accessToken, studentDetails]);
 
   if (loading) return <Loading />;
 

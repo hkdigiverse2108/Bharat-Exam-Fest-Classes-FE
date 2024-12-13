@@ -10,7 +10,12 @@ import OtpVerify from "../OtpVerify/OtpVerify";
 import axios from "axios";
 // import { loginAdmin, loginUser } from "../../Context/Action/index";
 import { handleLogin, verifyOtp } from "../../Hooks/authApi";
-import { loginUser, verifyOtpAction, logout } from "../../features/users/authSlice";
+import {
+  loginUser,
+  verifyOtpAction,
+  logout,
+} from "../../features/users/authSlice";
+import { loginAdmin } from "../../Context/Action";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -68,7 +73,6 @@ function LoginPage() {
   const handleNavigate = () => {
     navigate("/");
   };
-  // Assuming this function is in the component where you dispatch actions
 
   const handleLoginClick = async () => {
     try {
@@ -78,23 +82,19 @@ function LoginPage() {
         return false;
       }
 
-      // Call handleLogin (async function) to hit the API and get the response
-      // const response = await handleLogin(input);
+      const response = await handleLogin(input);
 
-      // Check if the response is successful
-      dispatch(loginUser(input)); // loginUser will handle storing user data in Redux
+      // dispatch(loginUser(input));
 
-      // If you also need to store admin data, dispatch the loginAdmin action
-      // dispatch(loginAdmin(response.data.data)); // Store admin data in Redux
+      dispatch(loginAdmin(response.data.data));
 
-      // Optional: Toggle the UI (for example, to close the login modal)
       handleToggle();
-      // if (response && response.status === 200) {
-      //   // Dispatch the loginUser action to store the user data
-      // } else {
-      //   console.error(response?.data?.message || "Login failed");
-      //   toast.error(response?.data?.message || "Login failed");
-      // }
+      if (response && response.status === 200) {
+        // Dispatch the loginUser action to store the user data
+      } else {
+        console.error(response?.data?.message || "Login failed");
+        toast.error(response?.data?.message || "Login failed");
+      }
     } catch (err) {
       console.error("Login failed:", err.message);
       toast.error("Login failed: " + err.message);
@@ -127,18 +127,18 @@ function LoginPage() {
         toast.warning("Fill up empty space");
         return false;
       } else {
-        // const response = await verifyOtp(otpValue);
-        // if (response.status === 200) {
-        //   toast.success(
-        //     response.data.message || "OTP verified and Login successfully"
-        //   );
-        //   dispatch(loginSuccess(response.data));
-        // } else {
-        //   toast.error(response.data.message);
-        // }
-        dispatch(verifyOtpAction({ otpValue }));
-        handleToggle();
-        handleNavigate();
+        const response = await verifyOtp(otpValue);
+        if (response.status === 200) {
+          toast.success(
+            response.data.message || "OTP verified and Login successfully"
+          );
+          handleToggle();
+          handleNavigate();
+          dispatch(loginSuccess(response.data));
+        } else {
+          toast.error(response.data.message);
+        }
+        // dispatch(verifyOtpAction({ otpValue }));
       }
     } catch (err) {
       toast.error("OTP verification failed: " + err.message);

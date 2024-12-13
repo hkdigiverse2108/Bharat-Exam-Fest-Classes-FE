@@ -26,15 +26,17 @@ const DropdownUser = () => {
 
   // Logout function
   const handleLogout = () => {
-    setConfirm(!confirm);
-    dispatch(logOutAdmin());
-    dispatch(logOut());
+    setTimeout(() => {
+      navigate("/");
+      setConfirm(!confirm);
+      dispatch(logOutAdmin());
+      dispatch(logOut());
+    }, 1000);
   };
 
   const confirmLogout = () => {
     handleLogout();
     toast.success("Logout successfully");
-    navigate("/");
   };
 
   return (

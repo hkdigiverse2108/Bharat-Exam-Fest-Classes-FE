@@ -44,6 +44,11 @@ export default function PasswordUpdate() {
   const validatePasswordMatch = () => {
     return currentUser.password === confirmPassword;
   };
+  const handleAction = () => {
+    setTimeout(() => {
+      navigate("/");
+    }, 1000);
+  };
 
   const ChangePassword = async () => {
     try {
@@ -59,9 +64,7 @@ export default function PasswordUpdate() {
         if (response.status === 200) {
           toast.success(response.data.message);
           dispatch(loginAdmin(response.data.data));
-          setTimeout(() => {
-            navigate("/");
-          }, [1000]);
+          handleAction();
         } else {
           toast.error(response.data.message);
         }
