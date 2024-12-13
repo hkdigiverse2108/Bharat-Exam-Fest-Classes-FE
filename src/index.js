@@ -6,10 +6,9 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { Provider } from "react-redux";
 import Store from "./Context/Store/Store";
-
+// import store from './app/store';
 // Store.subscribe(() => console.log(Store.getState()));
 const Root = () => {
-  // Memoize the store instance to avoid unnecessary re-renders
   const value = useMemo(() => Store, []);
 
   return (

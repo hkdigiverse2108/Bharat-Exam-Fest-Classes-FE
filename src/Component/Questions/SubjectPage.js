@@ -33,75 +33,37 @@ function SubjectPage() {
     navigate("/subjectDetails");
   }
 
-  const [isLoading, setIsLoading] = useState(false); // Loading state
-  const [networkError, setNetworkError] = useState(""); // Error state
+  const [isLoading, setIsLoading] = useState(false);
+  const [networkError, setNetworkError] = useState("");
 
   const debounceTimeoutRef = useRef(null);
 
-  // Debounced function to fetch subjects
-  const handleGetData = useCallback(async () => {
-    setIsLoading(true);
-    setNetworkError("");
-
-    const controller = new AbortController();
-    const signal = controller.signal;
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalData, setTotalData] = useState(0);
+  const [displayedSubjects, setDisplayedSubjects] = useState([]);
+  const fetchData = async () => {
     try {
-      // Use the fetchSubjects function, passing the necessary parameters
-      const { totalQuestions, subjects } = await fetchSubjects(
+      const response = await fetchSubjects(
         accessToken,
         _id,
-        signal
+        currentPage,
+        limit
       );
-      console.log("subject-Data", subjects);
 
-      if (!subjects || !totalQuestions) {
-        console.log("No data received");
-        return;
-      }
+      setTotalData(response.subjects?.totalData);
 
-      // Set the fetched data
-      setData(subjects);
-      setTotalQuestion(totalQuestions);
+      setData(response?.subjects?.subject_data);
+      setTotalQuestion(response?.totalQuestions);
     } catch (error) {
-      if (error.name === "AbortError") {
-        console.log("Fetch aborted");
-      } else {
-        console.error("Failed to fetch data.", error);
-        setNetworkError(error.message || "Unknown error");
-      }
-    } finally {
-      setIsLoading(false);
+      console.error("Error fetching data:", error);
     }
-
-    return () => {
-      controller.abort(); // Cleanup function to abort the fetch
-    };
-  }, [accessToken, _id]);
-
-  // Debounce logic: delay the API call
-  const debounceGetData = useCallback(() => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current); // Clear previous timeout
-    }
-
-    debounceTimeoutRef.current = setTimeout(() => {
-      handleGetData();
-    }, 500); // Adjust debounce delay (500ms)
-  }, [handleGetData]);
-
-  // useEffect hook to trigger debounced API request on dependencies change
+  };
   useEffect(() => {
-    debounceGetData();
+    fetchData();
+  }, [accessToken]);
 
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current); // Cleanup on unmount
-      }
-    };
-  }, [debounceGetData, accessToken, _id]);
-
-
+  
   return (
     <>
       <section>
@@ -165,4 +127,101 @@ function SubjectPage() {
     </>
   );
 }
+
+// Sample data structure
+// const subjects = {
+//   subject_data: [
+//     // ... (your subject data here)
+//     { _id: "1", name: "Subject 1", image: "https://via.placeholder.com/150" },
+//     { _id: "2", name: "Subject 2", image: "https://via.placeholder.com/150" },
+//     { _id: "3", name: "Subject 3", image: "https://via.placeholder.com/150" },
+//     { _id: "4", name: "Subject 4", image: "https://via.placeholder.com/150" },
+//     { _id: "5", name: "Subject 5", image: "https://via.placeholder.com/150" },
+//     { _id: "6", name: "Subject 6", image: "https://via.placeholder.com/150" },
+//     { _id: "7", name: "Subject 7", image: "https://via.placeholder.com/150" },
+//     { _id: "8", name: "Subject 8", image: "https://via.placeholder.com/150" },
+//     { _id: "9", name: "Subject 9", image: "https://via.placeholder.com/150" },
+//     { _id: "10", name: "Subject 10", image: "https://via.placeholder.com/150" },
+//     { _id: "11", name: "Subject 11", image: "https://via.placeholder.com/150" },
+//     { _id: "12", name: "Subject 12", image: "https://via.placeholder.com/150" },
+//     { _id: "13", name: "Subject 13", image: "https://via.placeholder.com/150" },
+//     { _id: "14", name: "Subject 14", image: "https://via.placeholder.com/150" },
+//     { _id: "15", name: "Subject 15", image: "https://via.placeholder.com/150" },
+//   ],
+//   totalData: 15,
+//   state: {
+//     page: 1, // Current page
+//     limit: 10, // Number of items per page
+//     page_limit: 2, // Number of pages to show in pagination
+//   },
+// };
+
+// const SubjectPage = () => {
+//   const [currentPage, setCurrentPage] = useState(subjects.state.page);
+//   const [limit] = useState(subjects.state.limit);
+//   const [pageLimit] = useState(subjects.state.page_limit);
+//   const [displayedSubjects, setDisplayedSubjects] = useState([]);
+
+//   useEffect(() => {
+//     // Calculate the start and end index for slicing
+//     const startIndex = (currentPage - 1) * limit;
+//     const endIndex = startIndex + limit;
+
+//     // Get the subjects for the current page
+//     const currentSubjects = subjects.subject_data.slice(startIndex, endIndex);
+
+//     // Get the subjects for the next page if within bounds
+//     const nextPageSubjects = subjects.subject_data.slice(
+//       endIndex,
+//       endIndex + limit
+//     );
+
+//     setDisplayedSubjects([...currentSubjects, ...nextPageSubjects]);
+//   }, [currentPage, limit]);
+
+//   const totalPages = Math.ceil(subjects.totalData / limit);
+
+//   const handlePageChange = (newPage) => {
+//     if (newPage >= 1 && newPage <= totalPages) {
+//       setCurrentPage(newPage);
+//     }
+//   };
+
+//   return (
+//     <div>
+//       <h1>Subjects</h1>
+//       <ul className="flex gap-2">
+//         {displayedSubjects.map((subject) => (
+//           <li key={subject._id}>
+//             <h2>{subject.name}</h2>
+//             <img src={subject.image} alt={subject.name} />
+//             {/* Render other subject details as needed */}
+//           </li>
+//         ))}
+//       </ul>
+//       <div>
+//         <p>Total Subjects: {subjects.totalData}</p>
+//         <p>
+//           Showing page {currentPage} of {totalPages}
+//         </p>
+//         <div>
+//           {/* Pagination Controls */}
+//           <button
+//             onClick={() => handlePageChange(currentPage - 1)}
+//             disabled={currentPage === 1}
+//           >
+//             Previous
+//           </button>{" "}
+//           <button
+//             onClick={() => handlePageChange(currentPage + 1)}
+//             disabled={currentPage === totalPages}
+//           >
+//             Next
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
 export default SubjectPage;

@@ -36,7 +36,9 @@ function AddQuestion() {
       state.authConfig.userInfo[0]?.data?.token ||
       state.authConfig.userInfo[0]?.token
   );
-  const subject = useSelector((state) => state.userConfig?.CurrentSubject?._id);
+  const subjectId = useSelector(
+    (state) => state.userConfig?.CurrentSubject?._id
+  );
 
   const [questionType, setQuestionType] = useState("normal");
   const [isLoading, setIsLoading] = useState(true);
@@ -48,7 +50,7 @@ function AddQuestion() {
   const [selectedSubject, setSelectedSubject] = useState([]);
   const getInitialEditQuestionState = (TypeofQuestion) => {
     const commonFields = {
-      subjectId: subject,
+      subjectId: subjectId,
       classesId: classId,
       subtopicIds: [],
       type: type,
@@ -328,7 +330,6 @@ function AddQuestion() {
     // Handle delete action
     if (value.type === "delete") {
       setAddQuestion((prev) => {
-        // Remove the pair question with the matching id
         const updatedPair = prev[language].pairQuestion.filter(
           (item) => item.id !== id
         );
@@ -342,10 +343,9 @@ function AddQuestion() {
         };
       });
       console.log(`Deleted pair with id: ${id}`);
-      return; // Exit early after handling the delete
+      return;
     }
 
-    // Validate pair data
     if (typeof pairA !== "string" || typeof pairB !== "string") {
       console.log("Invalid input data: pairA or pairB is not a string");
       return;
@@ -355,29 +355,21 @@ function AddQuestion() {
       toast.warn("Invalid pair: Missing pairA or pairB");
       return;
     }
-
-    // Combine pairA and pairB into a single string
     const combinedPair = `${pairA} --- ${pairB}`;
 
-    // Prepare the final object with id and combined pair data
     const finalCombined = {
       id: id,
       combined: combinedPair,
     };
 
-    // Update the pair question data in the state
     setAddQuestion((prev) => {
-      // Update or add the pair question based on the id
       const updatedPairQuestion = prev[language].pairQuestion.map((pair) =>
         pair.id === id ? { ...pair, ...finalCombined } : pair
       );
 
-      // If the pair doesn't exist in the array, push it as a new pair
       if (!updatedPairQuestion.some((pair) => pair.id === id)) {
         updatedPairQuestion.push(finalCombined);
       }
-
-      // Return the updated state
       return {
         ...prev,
         [language]: {
@@ -423,31 +415,19 @@ function AddQuestion() {
     }
   };
 
-  const handleGetData = useCallback(async () => {
+  const handleGetData = async () => {
     setIsLoading(true);
     setNetworkError("");
 
-    const controller = new AbortController();
-    const signal = controller.signal;
-
     try {
-      const { subjects, subTopic } = await fetchData(
-        accessToken,
-        subject,
-        signal
-      );
+      const result = await fetchData(accessToken, subjectId);
 
-      if (!subjects || subjects.length === 0 || !subTopic) {
-        console.log("No data received");
-        setSubjectname([]);
-        setSelectedSubject("");
-        setSubtopics([]);
-        return;
+      if (result.success) {
+        console.log(result.subjects);
+        setSubjectname(result.subjects);
+        setSelectedSubject(result.subjects);
+        setSubtopics(result.subTopic);
       }
-
-      setSubjectname(subjects);
-      setSelectedSubject(subjects);
-      setSubtopics(subTopic);
     } catch (error) {
       if (error.name === "AbortError") {
         console.log("Fetch aborted");
@@ -458,11 +438,11 @@ function AddQuestion() {
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, subject]);
+  };
 
   useEffect(() => {
     handleGetData();
-  }, [handleGetData]);
+  }, [accessToken]);
 
   useEffect(() => {
     console.log("Add_question", addQuestion);
@@ -490,28 +470,27 @@ function AddQuestion() {
     return false;
   };
 
-  function handleNavigate() {
-    navigate("/subjectDetails");
-  }
+  const handleAction = () => {
+    setTimeout(() => {
+      navigate("/subjectDetails");
+    }, 1000);
+  };
 
   const handleSubmit = async () => {
     if (isEmpty()) {
       toast.warning("Please fill up all the required fields.");
     } else {
       try {
-        const response = await addNewQuestion(addQuestion, accessToken);
+        const result = await addNewQuestion(addQuestion, accessToken);
 
-        if (response.status === 200) {
-          const message = response.data.message || "Question add successfully!";
-          toast.success(message);
-          console.log("Question added successfully:", response);
-          handleNavigate(); // Navigate to another page if required
+        if (result.success) {
+          console.log("Question added successfully:", result);
+          handleAction();
         } else {
-          // Handle non-200 responses
           toast.warn(
-            response.data.message || "Something went wrong. Please try again!"
+            result.data.message || "Something went wrong. Please try again!"
           );
-          console.log("Error adding question:", response);
+          console.log("Error adding question:", result);
         }
       } catch (error) {
         // Handle errors with toast and log the error
@@ -702,16 +681,16 @@ function AddQuestion() {
             </>
           )}
         </div>
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          closeOnClick={true}
-          pauseOnHover={true}
-          draggable={true}
-          theme="dark"
-        />
       </section>
+      <ToastContainer
+        position="top-right"
+        autoClose={1000}
+        hideProgressBar={false}
+        closeOnClick={true}
+        pauseOnHover={true}
+        draggable={true}
+        theme="dark"
+      />
     </>
   );
 }

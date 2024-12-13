@@ -1,15 +1,10 @@
 import axios from "axios";
-import { convertIscToUtc, convertUtcToIst } from "../Utils/timeUtils"; // Import the time conversion function
+import { convertIscToUtc, convertUtcToIst } from "../Utils/timeUtils";
 import { toast } from "react-toastify";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
-export const fetchQuestionsBySubject = async (
-  token,
-  subjectId,
-  classesId,
-  signal
-) => {
+export const fetchQuestionsBySubject = async (token, subjectId, classesId) => {
   try {
     let config = {
       method: "get",
@@ -18,7 +13,6 @@ export const fetchQuestionsBySubject = async (
         Authorization: ` ${token}`,
         "Content-Type": "application/json",
       },
-      signal: signal,
     };
 
     const response1 = await axios.request(
@@ -34,41 +28,44 @@ export const fetchQuestionsBySubject = async (
     const Questions = response1?.data?.data?.question_data || [];
     const subTopics = response2?.data?.data?.sub_topic_data || [];
 
-    // Apply convertUtcToIst to relevant date fields in Questions
-    const convertedQuestions = Questions.map((question) => ({
-      ...question,
-      createdAt: question.createdAt
-        ? convertUtcToIst(question.createdAt)
-        : null,
-      updatedAt: question.updatedAt
-        ? convertUtcToIst(question.updatedAt)
-        : null,
-      startDate: question.startDate
-        ? convertUtcToIst(question.start_date)
-        : null,
-      endDate: question.end_date ? convertUtcToIst(question.end_date) : null,
-    }));
+    const convertedQuestions = Questions.map((question) => {
+      const convertedQuestion = { ...question };
+      if (question.createdAt) {
+        convertedQuestion.createdAt = convertUtcToIst(question.createdAt);
+      }
+      if (question.updatedAt) {
+        convertedQuestion.updatedAt = convertUtcToIst(question.updatedAt);
+      }
+      if (question.startDate) {
+        convertedQuestion.startDate = convertUtcToIst(question.startDate);
+      }
+      if (question.endDate) {
+        convertedQuestion.endDate = convertUtcToIst(question.endDate);
+      }
 
+      return convertedQuestion;
+    });
     console.log("Converted Questions:", convertedQuestions);
 
-    // Apply convertUtcToIst to relevant date fields in Sub-Topics if needed
-    const convertedSubTopics = subTopics.map((subTopic) => ({
-      ...subTopic,
-      createdAt: subTopic.createdAt
-        ? convertUtcToIst(subTopic.createdAt)
-        : null,
-      updatedAt: subTopic.updatedAt
-        ? convertUtcToIst(subTopic.updatedAt)
-        : null,
-      // Add other date fields if necessary
-    }));
+    const convertedSubTopics = subTopics.map((subTopic) => {
+      const convertedSubTopic = { ...subTopic };
+      if (subTopic.createdAt) {
+        convertedSubTopic.createdAt = convertUtcToIst(subTopic.createdAt);
+      }
+      if (subTopic.updatedAt) {
+        convertedSubTopic.updatedAt = convertUtcToIst(subTopic.updatedAt);
+      }
+
+      return convertedSubTopic;
+    });
+    console.log("Converted SubTopics:", convertedSubTopics);
 
     return {
       Questions: convertedQuestions,
       subTopics: convertedSubTopics,
     };
   } catch (err) {
-    toast.error("Error fetching data:", err);
+    console.error("Error fetching data:", err);
     throw new Error(
       err.response?.data?.message ||
         err.message ||
@@ -77,7 +74,7 @@ export const fetchQuestionsBySubject = async (
   }
 };
 
-export const getQuestionData = async (token, questionId, signal) => {
+export const getQuestionData = async (token, questionId) => {
   try {
     let config = {
       method: "get",
@@ -86,7 +83,6 @@ export const getQuestionData = async (token, questionId, signal) => {
         Authorization: ` ${token}`,
         "Content-Type": "application/json",
       },
-      signal: signal,
     };
 
     const response = await axios.request(
@@ -96,18 +92,15 @@ export const getQuestionData = async (token, questionId, signal) => {
 
     if (response.status === 200) {
       const questionData = response.data.data;
-
-      // Convert date fields from UTC to IST if they exist
       if (questionData) {
-        questionData.createdAt = questionData.createdAt
-          ? convertUtcToIst(questionData.createdAt)
-          : null;
-        questionData.updatedAt = questionData.updatedAt
-          ? convertUtcToIst(questionData.updatedAt)
-          : null;
+        if (questionData.createdAt) {
+          questionData.createdAt = convertUtcToIst(questionData.createdAt);
+        }
+        if (questionData.updatedAt) {
+          questionData.updatedAt = convertUtcToIst(questionData.updatedAt);
+        }
       }
-
-      console.log("Converted Question Data:", questionData); // Check the conversion
+      console.log("Converted Question Data:", questionData);
 
       return questionData;
     } else {
@@ -119,7 +112,7 @@ export const getQuestionData = async (token, questionId, signal) => {
   }
 };
 
-export const deleteExistQuestion = async (token, itemToDelete, signal) => {
+export const deleteExistQuestion = async (token, itemToDelete) => {
   try {
     const config = {
       method: "delete",
@@ -127,7 +120,6 @@ export const deleteExistQuestion = async (token, itemToDelete, signal) => {
         Authorization: `${token}`,
         "Content-Type": "application/json",
       },
-      signal: signal,
     };
 
     const response = await axios.delete(
@@ -135,14 +127,17 @@ export const deleteExistQuestion = async (token, itemToDelete, signal) => {
       config
     );
 
-    if (response.data && response.data.updatedAt) {
-      // Convert `updatedAt` from IST to UTC
-      const utcTime = convertIscToUtc(response.data.updatedAt);
-      console.log("Converted UTC time:", utcTime);
-      response.data.updatedAt = utcTime;
+    if (response.status === 200) {
+      toast.success(response.data.message);
+      return {
+        success: true,
+        message: response.data.message,
+        data: response.data,
+      };
+    } else {
+      toast.error(response.data.message);
+      throw new Error("Failed to delete question");
     }
-
-    return response;
   } catch (err) {
     console.error("Error deleting question:", err);
     throw new Error(
@@ -155,7 +150,6 @@ export const deleteExistQuestion = async (token, itemToDelete, signal) => {
 
 export const addNewQuestion = async (addQuestion, token) => {
   try {
-    // Convert the date fields in addQuestion object from IST to UTC
     if (addQuestion.createdAt) {
       addQuestion.createdAt = convertIscToUtc(addQuestion.createdAt);
     }
@@ -184,36 +178,29 @@ export const addNewQuestion = async (addQuestion, token) => {
     const response = await axios.request(config);
 
     if (response.status === 200) {
-      // If the response contains createdAt field, convert it from IST to UTC
-      if (response.data.createdAt) {
-        const utcTime = convertIscToUtc(response.data.createdAt); // Convert from IST to UTC
-        console.log("Converted UTC time:", utcTime); // Log the converted time
-        response.data.createdAt = utcTime;
-      }
-
-      return response;
+      toast.success(response.data.message);
+      return {
+        success: true,
+        message: response.data.message || "Question add successfully!",
+        data: response.data.data,
+      };
     } else {
-      return response;
+      toast.error(response.data.message);
+      throw new Error("Failed to add question");
     }
   } catch (error) {
-    console.error("Error adding question:", error); // Log the error for debugging
+    console.error("Error adding question:", error);
+    throw error;
   }
 };
 
 export const editQuestionAPI = async (editQuestion, token) => {
   try {
-    // Convert the date fields in editQuestion object from IST to UTC
     if (editQuestion.createdAt) {
       editQuestion.createdAt = convertIscToUtc(editQuestion.createdAt);
     }
     if (editQuestion.updatedAt) {
       editQuestion.updatedAt = convertIscToUtc(editQuestion.updatedAt);
-    }
-    if (editQuestion.startDate) {
-      editQuestion.startDate = convertIscToUtc(editQuestion.startDate);
-    }
-    if (editQuestion.endDate) {
-      editQuestion.endDate = convertIscToUtc(editQuestion.endDate);
     }
 
     const data = JSON.stringify(editQuestion);
@@ -231,19 +218,19 @@ export const editQuestionAPI = async (editQuestion, token) => {
     const response = await axios.request(config);
 
     if (response.status === 200) {
-
-      if (response.data.createdAt) {
-        const utcTime = convertIscToUtc(response.data.createdAt); // Convert from IST to UTC
-        console.log("Converted UTC time:", utcTime); // Log the converted time
-        response.data.createdAt = utcTime;
-      }
-
-      return response;
+      toast.success(response.data.message);
+      return {
+        success: true,
+        message: response.data.message || "Question edit successfully!",
+        data: response.data.data,
+      };
     } else {
+      toast.error(response.data.message);
+
       throw new Error("Failed to edit question");
     }
   } catch (error) {
     console.error("Error editing question:", error);
-    throw error; // Re-throw error for handling in the calling function
+    throw error;
   }
 };

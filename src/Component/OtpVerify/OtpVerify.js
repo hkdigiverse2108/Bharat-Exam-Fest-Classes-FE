@@ -19,6 +19,7 @@ const OtpVerify = ({
 
     // Update the OTP value at the correct index
     handleChangeOTP(e, index);
+    
 
     // If the input is not empty, move the focus to the next input
     if (value && index < otpRefs.current.length - 1) {

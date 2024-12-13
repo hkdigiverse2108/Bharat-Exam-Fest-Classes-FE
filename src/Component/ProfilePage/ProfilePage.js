@@ -31,30 +31,26 @@ export default function ProfilePage() {
     },
   });
 
-  const [isLoading, setIsLoading] = useState(false); // Loading state
-  const [networkError, setNetworkError] = useState(null); // Network error state
+  const [isLoading, setIsLoading] = useState(false); 
+  const [networkError, setNetworkError] = useState(null); 
 
   const debounceTimeoutRef = useRef(null);
 
   const handleImageUpload = useCallback(
     async (file) => {
-      // Debounce logic: Cancel previous timeout if it's still pending
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
       }
-
-      // Start loading when image upload begins
       setIsLoading(true);
-      setNetworkError(null); // Reset any previous network errors
+      setNetworkError(null);
 
-      // Use setTimeout to debounce the image upload
       debounceTimeoutRef.current = setTimeout(async () => {
         try {
           const response = await imgUpload(file, accessToken);
           if (response.status === 200) {
             setFormData((prevData) => ({
               ...prevData,
-              image: response.data.data, // Assuming the response contains the image data
+              image: response.data.data,
             }));
             toast.success(response.data.message);
           } else {
@@ -70,7 +66,7 @@ export default function ProfilePage() {
         } finally {
           setIsLoading(false);
         }
-      }, 500); // 500ms debounce delay
+      }, 500);
     },
     [accessToken]
   );
@@ -115,23 +111,20 @@ export default function ProfilePage() {
     async (e) => {
       e.preventDefault();
 
-      // Debounce logic: cancel previous submission if pending
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
       }
 
-      // Debounce the form submission with a delay (500ms)
       debounceTimeoutRef.current = setTimeout(async () => {
         if (!formData || Object.keys(formData).length === 0) {
           toast.warn("Please fill up the empty fields.");
           return;
         }
 
-        setIsLoading(true); // Set loading state
-        setNetworkError(null); // Reset network error before submission
+        setIsLoading(true); 
+        setNetworkError(null); 
 
         try {
-          // Make API call to update profile
           const response = await updateProfile(accessToken, formData);
 
           if (response?.data?.status === 200) {
@@ -146,7 +139,6 @@ export default function ProfilePage() {
               console.error("No user data found in the response.");
             }
           } else {
-            // Error response handling
             console.error(
               "Error response:",
               response?.error || "Unknown error"
@@ -154,19 +146,16 @@ export default function ProfilePage() {
             toast.error(response?.error || "Unknown error occurred.");
           }
         } catch (error) {
-          // Handle network or other unexpected errors
           console.error("Error during profile update:", error);
           toast.error("Failed to update profile. Please check your network.");
           setNetworkError(
             "Network error while updating profile. Please try again."
           );
         } finally {
-          setIsLoading(false); // Reset loading state after submission attempt
+          setIsLoading(false);
         }
-      }, 500); // Debounce delay (500ms)
-
+      }, 500); 
       return () => {
-        // Cleanup debounce timeout when component is unmounted
         if (debounceTimeoutRef.current) {
           clearTimeout(debounceTimeoutRef.current);
         }

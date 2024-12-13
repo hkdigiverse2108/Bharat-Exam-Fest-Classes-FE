@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect,  useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -21,7 +21,6 @@ function EditQuestion() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // const { _id } = useSelector((state) => state.userConfig.classesData);
   const accessToken = useSelector(
     (state) =>
       state.authConfig.userInfo[0]?.data?.token ||
@@ -250,7 +249,6 @@ function EditQuestion() {
         },
       }));
     } else if (currentQuestionType === "statement") {
-      // Logic for handling normal statement questions
       const updatedStatements = [...editQuestion[lang].statements, value];
 
       setEditQuestion((prev) => ({
@@ -302,7 +300,6 @@ function EditQuestion() {
   };
 
   const handleAddPair = (value, language) => {
-    // Check if rowData is available in value
     if (!value?.rowData) {
       console.log("No row data available");
       return;
@@ -310,7 +307,6 @@ function EditQuestion() {
 
     const { pairA, pairB, id } = value.rowData;
 
-    // Handle delete action
     if (value.type === "delete") {
       setEditQuestion((prev) => {
         // Remove the pair question with the matching id
@@ -341,28 +337,22 @@ function EditQuestion() {
       return;
     }
 
-    // Combine pairA and pairB into a single string
     const combinedPair = `${pairA} --- ${pairB}`;
 
-    // Prepare the final object with id and combined pair data
     const finalCombined = {
       id: id,
       combined: combinedPair,
     };
 
-    // Update the pair question data in the state
     setEditQuestion((prev) => {
-      // Update or add the pair question based on the id
       const updatedPairQuestion = prev[language].pairQuestion.map((pair) =>
         pair.id === id ? { ...pair, ...finalCombined } : pair
       );
 
-      // If the pair doesn't exist in the array, push it as a new pair
       if (!updatedPairQuestion.some((pair) => pair.id === id)) {
         updatedPairQuestion.push(finalCombined);
       }
 
-      // Return the updated state
       return {
         ...prev,
         [language]: {
@@ -408,19 +398,12 @@ function EditQuestion() {
     }
   };
 
-  const handleGetData = useCallback(async () => {
+  const handleGetData = async () => {
     setIsLoading(true);
     setError("");
 
-    const controller = new AbortController();
-    const signal = controller.signal;
-
     try {
-      const Subjectdata = await fetchData(
-        accessToken,
-        CurrentSubject?._id,
-        signal
-      );
+      const Subjectdata = await fetchData(accessToken, CurrentSubject?._id);
 
       if (!Subjectdata?.subTopic || !Subjectdata.subjects) {
         console.log("No data received");
@@ -439,11 +422,11 @@ function EditQuestion() {
     } finally {
       setIsLoading(false);
     }
-  }, [accessToken, CurrentSubject]);
+  };
 
   useEffect(() => {
     handleGetData();
-  }, [handleGetData]);
+  }, [accessToken]);
 
   const isEmpty = () => {
     if (
@@ -471,21 +454,36 @@ function EditQuestion() {
     );
   };
 
+  const handleAction = () => {
+    setTimeout(() => {
+      navigate("/subjectDetails");
+    }, 1000);
+  };
+
   const EditQuestion = async () => {
     try {
       if (isEmpty()) {
         toast.warning("Please fill up empty fields.");
       } else {
         const { _id, ...questionData } = editQuestion;
-        const response = await editQuestionAPI(questionData, accessToken);
-        if (response.status === 200) {
-          toast.success(
-            response.data.message || "Question edited successfully!"
-          );
-          navigate("/subjectDetails");
-          handleGetData();
+        const prepareDataForApi = (data) => {
+          const {
+            isDeleted,
+            isBlocked,
+            createdBy,
+            updatedBy,
+            createdAt,
+            updatedAt,
+            ...rest
+          } = data;
+          return rest;
+        };
+        const apiData = prepareDataForApi(questionData);
+        const result = await editQuestionAPI(apiData, accessToken);
+        if (result.success) {
+          handleAction();
         } else {
-          toast.error(response.data.message || "Failed to edit question.");
+          toast.error(result.message || "Failed to edit question.");
         }
       }
     } catch (err) {
@@ -775,14 +773,14 @@ function EditQuestion() {
                   type="button"
                   onClick={EditQuestion}
                   className="inline-flex items-center py-2 px-6 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-                  disabled={isLoading} // Disable the button during loading
+                  disabled={isLoading}
                 >
                   {isLoading ? (
                     <span>Saving...</span>
                   ) : (
                     <>
                       <VscSaveAs className="mr-2" />
-                      Save Question
+                      Save
                     </>
                   )}
                 </button>
@@ -790,15 +788,16 @@ function EditQuestion() {
             </>
           )}
         </div>
-        <ToastContainer
-          draggable={false}
-          autoClose={2000}
-          hideProgressBar={false}
-          newestOnTop={true}
-          closeOnClick={false}
-          theme="dark"
-        />
       </section>
+      <ToastContainer
+        position="top-right"
+        autoClose={1000}
+        hideProgressBar={false}
+        closeOnClick={true}
+        pauseOnHover={true}
+        draggable={true}
+        theme="dark"
+      />
     </>
   );
 }

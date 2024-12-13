@@ -12,6 +12,9 @@ import ProfilePage from "./Component/ProfilePage/ProfilePage";
 import Loading from "./Component/Loader/Loading";
 import PasswordUpdate from "./Component/NewPassword/PasswordUpdate";
 import StudentPage from "./Component/Studens/StudentPage";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -50,7 +53,15 @@ function App() {
           </Routes>
         </DefaultLayout>
       )}
-
+      <ToastContainer
+        position="top-right"
+        autoClose={1000}
+        hideProgressBar={false}
+        closeOnClick={true}
+        pauseOnHover={true}
+        draggable={true}
+        theme="dark"
+      />
     </>
   );
 }

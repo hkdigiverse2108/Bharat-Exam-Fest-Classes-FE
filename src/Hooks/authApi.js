@@ -48,11 +48,11 @@ export const handleLogin = async (input) => {
 export const verifyOtp = async (otpValue) => {
   try {
     const data = JSON.stringify(otpValue);
-    if (otpValue) {
-      const utcTime = convertIscToUtc(otpValue.otpVerifiedAt);
-      console.log(`Converted ${otpValue.otpVerifiedAt} to UTC:`, utcTime);
-      otpValue.otpVerifiedAt = utcTime;
-    }
+    // if (otpValue) {
+    //   const utcTime = convertIscToUtc(otpValue.otpVerifiedAt);
+    //   console.log(`Converted ${otpValue.otpVerifiedAt} to UTC:`, utcTime);
+    //   otpValue.otpVerifiedAt = utcTime;
+    // }
     const config = {
       method: "post",
       maxBodyLength: Infinity,

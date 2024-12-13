@@ -8,12 +8,16 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import OtpVerify from "../OtpVerify/OtpVerify";
 import axios from "axios";
-import { loginAdmin } from "../../Context/Action/index";
+// import { loginAdmin, loginUser } from "../../Context/Action/index";
 import { handleLogin, verifyOtp } from "../../Hooks/authApi";
+import { loginUser, verifyOtpAction, logout } from "../../features/users/authSlice";
 
 function LoginPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { loading, user, otpVerified, error } = useSelector(
+    (state) => state.auth
+  );
   const emailpatton = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
   const lowerCaseLetters = /[a-z]/g;
   const upperCaseLetters = /[A-Z]/g;
@@ -64,25 +68,58 @@ function LoginPage() {
   const handleNavigate = () => {
     navigate("/");
   };
+  // Assuming this function is in the component where you dispatch actions
 
   const handleLoginClick = async () => {
     try {
+      // Validate input
       if (isEmptyLogin()) {
         toast.warning("Fill up empty space");
         return false;
-      } else {
-        const response = await handleLogin(input);
-        if (response.status === 200) {
-          dispatch(loginAdmin(response.data.data));
-          handleToggle();
-        } else {
-          console.error(response.data.message);
-        }
       }
+
+      // Call handleLogin (async function) to hit the API and get the response
+      // const response = await handleLogin(input);
+
+      // Check if the response is successful
+      dispatch(loginUser(input)); // loginUser will handle storing user data in Redux
+
+      // If you also need to store admin data, dispatch the loginAdmin action
+      // dispatch(loginAdmin(response.data.data)); // Store admin data in Redux
+
+      // Optional: Toggle the UI (for example, to close the login modal)
+      handleToggle();
+      // if (response && response.status === 200) {
+      //   // Dispatch the loginUser action to store the user data
+      // } else {
+      //   console.error(response?.data?.message || "Login failed");
+      //   toast.error(response?.data?.message || "Login failed");
+      // }
     } catch (err) {
-      console``.error("Login failed: " + err.message);
+      console.error("Login failed:", err.message);
+      toast.error("Login failed: " + err.message);
     }
   };
+
+  // const handleLoginClick = async () => {
+  //   try {
+  //     if (isEmptyLogin()) {
+  //       toast.warning("Fill up empty space");
+  //       return false;
+  //     } else {
+  //       const response = await handleLogin(input);
+  //       if (response.status === 200) {
+  //         dispatch(loginUser(input));
+  //         dispatch(loginAdmin(response.data.data));
+  //         handleToggle();
+  //       } else {
+  //         console.error(response.data.message);
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console``.error("Login failed: " + err.message);
+  //   }
+  // };
 
   const handleOtpVerification = async () => {
     try {
@@ -90,17 +127,18 @@ function LoginPage() {
         toast.warning("Fill up empty space");
         return false;
       } else {
-        const response = await verifyOtp(otpValue);
-        if (response.status === 200) {
-          toast.success(
-            response.data.message || "OTP verified and Login successfully"
-          );
-          dispatch(loginSuccess(response.data));
-          handleToggle();
-          handleNavigate();
-        } else {
-          toast.error(response.data.message);
-        }
+        // const response = await verifyOtp(otpValue);
+        // if (response.status === 200) {
+        //   toast.success(
+        //     response.data.message || "OTP verified and Login successfully"
+        //   );
+        //   dispatch(loginSuccess(response.data));
+        // } else {
+        //   toast.error(response.data.message);
+        // }
+        dispatch(verifyOtpAction({ otpValue }));
+        handleToggle();
+        handleNavigate();
       }
     } catch (err) {
       toast.error("OTP verification failed: " + err.message);
@@ -210,9 +248,7 @@ function LoginPage() {
                   remenber me
                 </label>
               </div>
-              <div
-                className="text-blue-800 hover:underline"
-              >
+              <div className="text-blue-800 hover:underline">
                 <p>Forgot password?</p>
               </div>
             </div>
